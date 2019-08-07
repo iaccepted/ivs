@@ -50,8 +50,9 @@ void destroy_epoll_manager(epoll_manager_t *manager)
     if (NULL == manager)
         return;
 
-	destroy_all_epoll_nodes(manager);
+    destroy_all_epoll_nodes(manager);
     free(manager);
+    close(manager->epoll_fd);
     return;
 }
 
@@ -73,9 +74,7 @@ int add_epoll_event(epoll_manager_t *manager, int fd, uint32_t _event, func_t cb
         return ret;
     }
 
-    pthread_mutex_lock(&manager->mutex);
     list_push_back(&manager->epoll_node_list, &node->node);
-    pthread_mutex_unlock(&manager->mutex);
     return ret;
 }
 
@@ -84,9 +83,7 @@ int del_epoll_event(epoll_manager_t *manager, int fd)
     int ret = 0;
 
     ret = epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-    pthread_mutex_lock(&manager->mutex);
     destroy_epoll_node(manager, fd);
-    pthread_mutex_unlock(&manager->mutex);
     return ret;
 }
 
@@ -141,7 +138,7 @@ static struct epoll_node *create_epoll_node(int fd, func_t cb, void *arg)
 static void destroy_epoll_node(epoll_manager_t *manager, int fd)
 {
     struct epoll_node *epoll_node = NULL;
-	struct epoll_node *next = NULL;
+    struct epoll_node *next = NULL;
 
     LIST_FOR_EACH_SAFE(epoll_node, next, node, &manager->epoll_node_list) {
         if (fd == epoll_node->fd) {
@@ -154,9 +151,10 @@ static void destroy_epoll_node(epoll_manager_t *manager, int fd)
 
 static void destroy_all_epoll_nodes(epoll_manager_t *manager)
 {
-	struct epoll_node *epoll_node = NULL;
+    struct epoll_node *epoll_node = NULL;
+    struct epoll_node *next_node = NULL;
 
-    LIST_FOR_EACH(epoll_node, node, &manager->epoll_node_list) {
+    LIST_FOR_EACH_SAFE(epoll_node, next_node, node, &manager->epoll_node_list) {
         list_remove(&epoll_node->node);
         free(epoll_node);
     }
