@@ -50,6 +50,8 @@ void destroy_epoll_manager(epoll_manager_t *manager)
     if (NULL == manager)
         return;
 
+    /* wait the end of loop thread */
+    pthread_join(manager->epoll_loop_tid, NULL);
     destroy_all_epoll_nodes(manager);
     free(manager);
     close(manager->epoll_fd);
@@ -91,7 +93,7 @@ int start_epoll_loop(epoll_manager_t *manager)
 {
     pthread_create(&manager->epoll_loop_tid, NULL, epoll_loop, (void *)manager);
     pthread_setname_np(manager->epoll_loop_tid, "epoll_loop");
-    pthread_join(manager->epoll_loop_tid, NULL);
+
     return 0;
 }
 
