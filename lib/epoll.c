@@ -141,8 +141,9 @@ static struct epoll_node *create_epoll_node(int fd, func_t cb, void *arg)
 static void destroy_epoll_node(epoll_manager_t *manager, int fd)
 {
     struct epoll_node *epoll_node = NULL;
+	struct epoll_node *next = NULL;
 
-    LIST_FOR_EACH(epoll_node, node, &manager->epoll_node_list) {
+    LIST_FOR_EACH_SAFE(epoll_node, next, node, &manager->epoll_node_list) {
         if (fd == epoll_node->fd) {
             list_remove(&epoll_node->node);
             free(epoll_node);

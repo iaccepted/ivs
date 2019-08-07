@@ -22,10 +22,19 @@ static inline void ovs_list_push_front(struct list *, struct list *);
 static inline void list_push_back(struct list *, struct list *);
 static inline bool list_is_empty(const struct list *);
 
+#define LIST_INITIALIZER(LIST) { LIST, LIST }
+
 #define LIST_FOR_EACH(ITER, MEMBER, LIST)                               \
     for (INIT_CONTAINER(ITER, (LIST)->next, MEMBER);                    \
          &(ITER)->MEMBER != (LIST);                                     \
          OBJECT_CONTAINER(ITER, (ITER)->MEMBER.next, MEMBER))
+
+#define LIST_FOR_EACH_SAFE(ITER, NEXT, MEMBER, LIST)               \
+		for (INIT_CONTAINER(ITER, (LIST)->next, MEMBER);			   \
+			 (&(ITER)->MEMBER != (LIST) 							   \
+			  ? INIT_CONTAINER(NEXT, (ITER)->MEMBER.next, MEMBER), 1   \
+			  : 0); 												   \
+			 (ITER) = (NEXT))
 
 static inline void list_init(struct list *list)
 {
