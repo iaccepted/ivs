@@ -27,7 +27,7 @@ typedef struct{
 epoll_manager_t *create_epoll_manager(uint32_t epoll_size, int epoll_wait_time);
 
 /* the caller should close all fd in epoll_manager */
-void destroy_epoll_manager(epoll_manager_t *manager);
+void wait_then_destroy_epoll_manager(epoll_manager_t *manager);
 
 /* the caller should close the fd */
 int del_epoll_event(epoll_manager_t *manager, int fd);

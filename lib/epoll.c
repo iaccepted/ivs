@@ -45,7 +45,7 @@ epoll_manager_t *create_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
     return manager;
 }
 
-void destroy_epoll_manager(epoll_manager_t *manager)
+void wait_then_destroy_epoll_manager(epoll_manager_t *manager)
 {
     if (NULL == manager)
         return;
