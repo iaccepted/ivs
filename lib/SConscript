@@ -1,0 +1,9 @@
+env = Environment()
+
+cflags = ['-O2', '-g']
+
+env.Append(CCFLAGS=cflags)
+
+obj = env.Object(Glob('*.c'))
+
+Return('obj')
