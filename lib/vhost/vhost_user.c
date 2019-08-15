@@ -148,7 +148,7 @@ static int send_vhost_reply(int sockfd, struct vhost_user_msg *msg)
     return send_vhost_message(sockfd, msg);
 }
 
-int vhost_user_msg_handler(int fd)
+static int vhost_user_msg_handler(int fd)
 {
     struct vhost_user_msg msg;
     int ret;
@@ -206,7 +206,7 @@ int vhost_user_msg_handler(int fd)
 }
 
 /* unix socket, as server*/
-int create_vhost_socket(vhost_user_socket *vsocket)
+int create_vhost_user(vhost_user_socket *vsocket)
 {
     int fd;
     struct sockaddr_un *un = &vsocket->un;
@@ -226,8 +226,7 @@ int create_vhost_socket(vhost_user_socket *vsocket)
     return 0;
 }
 
-int
-vhost_user_start_server(vhost_user_socket *vsocket)
+int vhost_user_start_server(vhost_user_socket *vsocket)
 {
     int ret;
     int fd = vsocket->fd;
