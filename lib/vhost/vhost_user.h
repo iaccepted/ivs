@@ -1,4 +1,12 @@
 #include <inttypes.h>
+#include <sys/un.h>
+
+typedef struct vhost_user_socket {
+    char *path;
+    struct sockaddr_un un;
+    int fd;
+    int type;
+} vhost_user_socket;
 
 /* refer to qemu 4.0 hw/virtio/vhost_user.h */
 #define VHOST_MEMORY_MAX_NREGIONS 8

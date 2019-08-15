@@ -8,10 +8,6 @@
 
 #include "list.h"
 
-#define MAX_EPOLL_FD_NUM  (2048)
-#define MAX_EPOLL_EVENT_NUM (128)
-#define EPOLL_WAIT_TIME_MS   (5)
-
 //pre declare
 struct epoll_node;
 

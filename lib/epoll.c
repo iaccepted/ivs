@@ -11,6 +11,10 @@
 extern "C" {
 #endif
 
+#define MAX_EPOLL_FD_NUM  (2048)
+#define MAX_EPOLL_EVENT_NUM (128)
+#define EPOLL_WAIT_TIME_MS   (5)
+
 struct epoll_node {
     int fd;
     void *cb;

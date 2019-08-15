@@ -4,8 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include "vhost_user.h"
+#include "epoll.h"
+
+#define MAX_BACKLOG (256)
 
 /*return bytes# of read on success or negative val on failure.
   read vhost_user_msg header and fds in ancillary data
@@ -200,3 +204,54 @@ int vhost_user_msg_handler(int fd)
             break;
     }
 }
+
+/* unix socket, as server*/
+int create_vhost_socket(vhost_user_socket *vsocket)
+{
+    int fd;
+    struct sockaddr_un *un = &vsocket->un;
+
+    fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (fd < 0) {
+        return -1;
+    }
+    printf("vhost user socket created, fd = %d", fd);
+
+    memset(un, 0, sizeof(*un));
+    un->sun_family = AF_UNIX;
+    strncpy(un->sun_path, vsocket->path, sizeof(un->sun_path));
+    un->sun_path[sizeof(un->sun_path) - 1] = '\0';
+
+    vsocket->fd = fd;
+    return 0;
+}
+
+int
+vhost_user_start_server(vhost_user_socket *vsocket)
+{
+    int ret;
+    int fd = vsocket->fd;
+    const char *path = vsocket->path;
+
+    ret = bind(fd, (struct sockaddr *)&vsocket->un, sizeof(vsocket->un));
+    if (ret < 0) {
+        printf("failed to bind to %s: %s; remove it and try again\n",
+            path, strerror(errno));
+        goto err;
+    }
+    printf("bind to %s\n", path);
+
+    ret = listen(fd, MAX_BACKLOG);
+    if (ret < 0) {
+        goto err;
+    }
+
+    /* add fd to epoll */
+
+    return 0;
+
+err:
+    close(fd);
+    return -1;
+}
+

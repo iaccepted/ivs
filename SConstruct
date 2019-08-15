@@ -1,15 +1,16 @@
 src = Glob('*.c')
 
-paths = ['./lib/']
-paths += ['./lib/vhost']
-
 libs = ['pthread']
 
+cflags = [
+    '-Werror',
+]
+
 env = Environment()
-env.Append(CPPPATH=paths)
-env.Append(CCCOMSTR='CC $SOURCES') #define print format
+env.Append(CCCOMSTR='CC $SOURCES')
 env.Append(LINKCOMSTR='LINK $TARGET')
 env.Append(LIBS=libs)
+env.Append(CCFLAGS=cflags)
 
 objs = SConscript('./lib/SConscript', duplicate=0)
 objs += SConscript('./lib/vhost/SConscript', duplicate=0)
