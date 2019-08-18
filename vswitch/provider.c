@@ -4,7 +4,9 @@
 #include "epoll.h"
 #include "provider.h"
 
-struct global_db db;
+static struct global_db db = {
+    .epoll_manager = NULL,
+};
 
 int init_global_db(void)
 {
