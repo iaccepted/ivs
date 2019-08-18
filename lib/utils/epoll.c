@@ -22,18 +22,18 @@ struct epoll_node {
     struct list node;
 };
 
-static void destroy_epoll_node(epoll_manager_t *manager, int fd);
-static void destroy_all_epoll_nodes(epoll_manager_t *manager);
+static void destroy_epoll_node(struct epoll_manager *manager, int fd);
+static void destroy_all_epoll_nodes(struct epoll_manager *manager);
 static struct epoll_node *create_epoll_node(int fd, func_t cb, void *arg);
 static void *epoll_loop(void *arg);
 
-epoll_manager_t *create_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
+struct epoll_manager *create_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
 {
-    epoll_manager_t *manager = NULL;
+    struct epoll_manager *manager = NULL;
 
-    manager = (epoll_manager_t *)calloc(epoll_size, sizeof(epoll_manager_t));
+    manager = (struct epoll_manager *)calloc(epoll_size, sizeof(struct epoll_manager));
     if (NULL != manager) {
-        memset(manager, 0, sizeof(epoll_manager_t));
+        memset(manager, 0, sizeof(struct epoll_manager));
     }
 
     manager->epoll_fd = epoll_create(epoll_size);
@@ -49,20 +49,18 @@ epoll_manager_t *create_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
     return manager;
 }
 
-void wait_then_destroy_epoll_manager(epoll_manager_t *manager)
+void destroy_epoll_manager(struct epoll_manager *manager)
 {
     if (NULL == manager)
         return;
 
-    /* wait the end of loop thread */
-    pthread_join(manager->epoll_loop_tid, NULL);
     destroy_all_epoll_nodes(manager);
     free(manager);
     close(manager->epoll_fd);
     return;
 }
 
-int add_epoll_event(epoll_manager_t *manager, int fd, uint32_t _event, func_t cb, void *arg)
+int add_epoll_event(struct epoll_manager *manager, int fd, uint32_t _event, func_t cb, void *arg)
 {
     int ret = 0;
     struct epoll_node *node = NULL;
@@ -84,7 +82,7 @@ int add_epoll_event(epoll_manager_t *manager, int fd, uint32_t _event, func_t cb
     return ret;
 }
 
-int del_epoll_event(epoll_manager_t *manager, int fd)
+int del_epoll_event(struct epoll_manager *manager, int fd)
 {
     int ret = 0;
 
@@ -93,17 +91,28 @@ int del_epoll_event(epoll_manager_t *manager, int fd)
     return ret;
 }
 
-int start_epoll_loop(epoll_manager_t *manager)
+int start_epoll_loop(struct epoll_manager *manager,
+    const char *thread_name)
 {
+    int _tid = 0;
+
+    if (manager == NULL) {
+        printf("epoll manager is null.");
+        return -1;
+    }
     pthread_create(&manager->epoll_loop_tid, NULL, epoll_loop, (void *)manager);
-    pthread_setname_np(manager->epoll_loop_tid, "epoll_loop");
+    if (thread_name != NULL) {
+        pthread_setname_np(manager->epoll_loop_tid, thread_name);
+    } else {
+        pthread_setname_np(manager->epoll_loop_tid, "epoll_loop");
+    }
 
     return 0;
 }
 
 static void *epoll_loop(void *arg)
 {
-    epoll_manager_t *manager = (epoll_manager_t *)arg;
+    struct epoll_manager *manager = (struct epoll_manager *)arg;
     struct epoll_event events[MAX_EPOLL_EVENT_NUM];
     int event_num = 0;
     int i = 0;
@@ -141,7 +150,7 @@ static struct epoll_node *create_epoll_node(int fd, func_t cb, void *arg)
     return node;
 }
 
-static void destroy_epoll_node(epoll_manager_t *manager, int fd)
+static void destroy_epoll_node(struct epoll_manager *manager, int fd)
 {
     struct epoll_node *epoll_node = NULL;
     struct epoll_node *next = NULL;
@@ -155,7 +164,7 @@ static void destroy_epoll_node(epoll_manager_t *manager, int fd)
     }
 }
 
-static void destroy_all_epoll_nodes(epoll_manager_t *manager)
+static void destroy_all_epoll_nodes(struct epoll_manager *manager)
 {
     struct epoll_node *epoll_node = NULL;
     struct epoll_node *next_node = NULL;

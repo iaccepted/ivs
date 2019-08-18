@@ -1,6 +1,8 @@
 #include <inttypes.h>
 #include <sys/un.h>
 
+#include "provider.h"
+
 typedef struct vhost_user_socket {
     char *path;
     struct sockaddr_un un;
@@ -101,5 +103,6 @@ typedef struct vhost_user_msg {
 
 #define VHOST_USER_HDR_SIZE ((size_t) &(((vhost_user_msg *)0)->payload.u64))
 
+int vhost_user_msg_handler(int fd);
 int create_vhost_user(vhost_user_socket *vsocket);
 int vhost_user_start_server(vhost_user_socket *vsocket);

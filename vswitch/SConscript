@@ -2,8 +2,9 @@ env = Environment()
 
 cflags = ['-O2', '-g']
 paths = [
-    '../utils',
-    '../../vswitch',
+    '../lib/utils',
+    '../lib/vhost',
+    '.',
 ]
 
 env.Append(CCFLAGS=cflags)
