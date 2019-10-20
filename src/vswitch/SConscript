@@ -1,11 +1,7 @@
 env = Environment()
 
 cflags = ['-O2', '-g']
-paths = [
-    '../lib/utils',
-    '../lib/vhost',
-    '.',
-]
+paths = ['../../lib/']
 
 env.Append(CCFLAGS=cflags)
 env.Append(CPPPATH=paths)

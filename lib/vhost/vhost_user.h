@@ -1,8 +1,6 @@
 #include <inttypes.h>
 #include <sys/un.h>
 
-#include "provider.h"
-
 typedef struct vhost_user_socket {
     char *path;
     struct sockaddr_un un;

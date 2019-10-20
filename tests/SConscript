@@ -1,0 +1,14 @@
+env = Environment()
+
+cflags = ['-O3', '-g']
+paths = ['../lib']
+libs = ['pthread']
+
+env.Append(CCFLAGS=cflags)
+env.Append(CPPPATH=paths)
+env.Append(LIBS=libs)
+
+#epoll test
+objs = env.Object(target='epoll_', source=['../lib/epoll/epoll.c'], duplicate = 0)
+objs += env.Object(target='epoll_test', source=['test_epoll.c'], duplicate=0)
+env.Program(target = 'epoll', source = objs)

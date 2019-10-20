@@ -6,7 +6,7 @@
 #ifndef IVS_EPOLL_H
 #define IVS_EPOLL_H 1
 
-#include "list.h"
+#include "list/list.h"
 
 //pre declare
 struct epoll_node;
@@ -20,14 +20,14 @@ struct epoll_manager{
     pthread_mutex_t mutex;
 };
 
-struct epoll_manager *create_epoll_manager(uint32_t epoll_size, int epoll_wait_time);
+int init_epoll_manager(uint32_t epoll_size, int epoll_wait_time);
 
 /* the caller should close all fd in epoll_manager */
-void destroy_epoll_manager(struct epoll_manager *manager);
+void deinit_epoll_manager();
 
 /* the caller should close the fd */
-int del_epoll_event(struct epoll_manager *manager, int fd);
-int add_epoll_event(struct epoll_manager *manager, int fd, uint32_t _event, func_t cb, void *arg);
-int start_epoll_loop(struct epoll_manager *manager, const char *thread_name);
+int del_epoll_event(int fd);
+int add_epoll_event(int fd, uint32_t _event, func_t cb, void *arg);
+int start_epoll_loop(const char *thread_name);
 
 #endif

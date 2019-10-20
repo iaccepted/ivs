@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #include "vhost_user.h"
-#include "epoll.h"
+#include "epoll/epoll.h"
 
 #define MAX_BACKLOG (256)
 
@@ -231,7 +231,6 @@ int vhost_user_start_server(vhost_user_socket *vsocket)
     int ret;
     int fd = vsocket->fd;
     const char *path = vsocket->path;
-    struct global_db *db = NULL;
 
     ret = bind(fd, (struct sockaddr *)&vsocket->un, sizeof(vsocket->un));
     if (ret < 0) {
@@ -246,13 +245,7 @@ int vhost_user_start_server(vhost_user_socket *vsocket)
         goto err;
     }
 
-    /* add fd to epoll */
-    db = get_global_db();
-    if (db == NULL || db->epoll_manager == NULL) {
-        printf("db is NULL or epoll_manager is NULL.");
-        goto err;
-    }
-    ret = add_epoll_event(db->epoll_manager, fd, EPOLLIN|EPOLLET, NULL, vsocket);
+    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, NULL, vsocket);
     if (ret != 0) {
         printf("epoll operations failed.");
         goto err;

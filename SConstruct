@@ -12,9 +12,11 @@ env.Append(LINKCOMSTR='LINK $TARGET')
 env.Append(LIBS=libs)
 env.Append(CCFLAGS=cflags)
 
-objs = SConscript('./lib/utils/SConscript', duplicate=0)
+objs = SConscript('./lib/epoll/SConscript', duplicate=0)
 objs += SConscript('./lib/vhost/SConscript', duplicate=0)
-objs += SConscript('./vswitch/SConscript', duplicate=0)
+objs += SConscript('./src/vswitch/SConscript', duplicate=0)
+
+SConscript('./tests/SConscript', duplicate=0)
 
 objs += env.Object(src)
 

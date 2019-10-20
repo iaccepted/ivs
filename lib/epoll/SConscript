@@ -1,8 +1,10 @@
 env = Environment()
 
 cflags = ['-O2', '-g']
+paths = ['../']
 
 env.Append(CCFLAGS=cflags)
+env.Append(CPPPATH=paths)
 
 obj = env.Object(Glob('*.c'))
 
