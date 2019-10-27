@@ -9,6 +9,13 @@ env.Append(CPPPATH=paths)
 env.Append(LIBS=libs)
 
 #epoll test
-objs = env.Object(target='epoll_', source=['../lib/epoll/epoll.c'], duplicate = 0)
+objs = []
+objs = env.Object(target='epoll_', source=['../lib/epoll/epoll.c'], duplicate=0)
 objs += env.Object(target='epoll_test', source=['test_epoll.c'], duplicate=0)
-env.Program(target = 'epoll', source = objs)
+env.Program(target='build/epoll', source=objs)
+
+#ilog test
+objs = []
+objs += env.Object(target='ilog_', source=['../lib/log/ilog.c'], duplicate=0)
+objs += env.Object(target='ilog_test', source=['test_ilog.c'], duplicate=0)
+env.Program(target='build/ilog', source=objs)
