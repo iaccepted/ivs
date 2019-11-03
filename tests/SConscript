@@ -8,20 +8,26 @@ env.Append(CCFLAGS=cflags)
 env.Append(CPPPATH=paths)
 env.Append(LIBS=libs)
 
+common_objs = []
+common_objs += env.Object(target='epoll_', source=['../lib/epoll/epoll.c'], duplicate=0)
+common_objs += env.Object(target='ilog_', source=['../lib/log/ilog.c'], duplicate=0)
+common_objs += env.Object(target='sds_', source=['../lib/dynamic_string/dynamic_str.c'], duplicate=0)
+
+
 #epoll test
 objs = []
-objs = env.Object(target='epoll_', source=['../lib/epoll/epoll.c'], duplicate=0)
+objs += common_objs
 objs += env.Object(target='epoll_test', source=['test_epoll.c'], duplicate=0)
 env.Program(target='build/epoll', source=objs)
 
 #ilog test
 objs = []
-objs += env.Object(target='ilog_', source=['../lib/log/ilog.c'], duplicate=0)
+objs += common_objs
 objs += env.Object(target='ilog_test', source=['test_ilog.c'], duplicate=0)
 env.Program(target='build/ilog', source=objs)
 
 #dynamic string test
 objs = []
-objs += env.Object(target='sds_', source=['../lib/dynamic_string/dynamic_str.c'], duplicate=0)
+objs += common_objs
 objs += env.Object(target='sds_test', source=['test_dynamic_str.c'], duplicate=0)
 env.Program(target='build/sds', source=objs)

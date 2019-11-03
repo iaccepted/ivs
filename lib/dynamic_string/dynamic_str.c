@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
 #include <stdlib.h>
 
 #include "dynamic_str.h"
@@ -71,7 +70,7 @@ void sds_put_str(struct sds *sds, const char *str)
     sds->len += len;
 }
 
-static void sds_put_va_args(struct sds *sds, const char *format, va_list args)
+void sds_put_va_args(struct sds *sds, const char *format, va_list args)
 {
     va_list args_;
     size_t avail_len;
@@ -92,7 +91,9 @@ static void sds_put_va_args(struct sds *sds, const char *format, va_list args)
     if (need_len >= avail_len) {
         sds_expand(sds, need_len);
         avail_len = sds->all - sds->len + 1;
-        need_len = vsnprintf(sds->str + sds->len, avail_len, format, args);
+        va_copy(args_, args);
+        need_len = vsnprintf(sds->str + sds->len, avail_len, format, args_);
+        va_end(args_);
     }
     sds->len += need_len;
 }

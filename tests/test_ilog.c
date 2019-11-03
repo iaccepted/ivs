@@ -8,17 +8,17 @@ int main()
 
     /* this will no log */
     for(i = 0; i < 100; i++) {
-        ilog(ILOG_INFO, "%s", "INFO:hello world from ilog\n");
+        ilog(ILOG_INFO, "%s", "INFO:hello world from ilog");
     }
 
     /* log normally */
     for(i = 0; i < 100; i++) {
-        ilog(ILOG_ERR, "%s", "ERR:hello world from ilog\n");
+        ilog(ILOG_ERR, "%s", "hello world from ilog");
     }
 
     /* log normally */
     for(i = 0; i < 100; i++) {
-        ILOG(ERR, "%s-%d", "ERR:hello world from ILOG", 222);
+        ILOG(ERR, "%s-%d", "hello world from ILOG", 222);
     }
 
     ilog_uninit();

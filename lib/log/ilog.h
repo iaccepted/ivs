@@ -25,10 +25,7 @@ struct ilog_info {
 };
 
 #define ILOG(l, fmt, ...) \
-    ilog(ILOG_##l, "%s:%u:" fmt "\n", \
-        __FUNCTION__, \
-        __LINE__, \
-        ##__VA_ARGS__)
+    ilog(ILOG_##l, fmt, ##__VA_ARGS__)
 
 int ilog(ilog_level level, const char *format, ...) CHECK_FORMAT(2, 3);
 int ilog_init(const char *file_name, ilog_level level);

@@ -20,6 +20,7 @@ objs = SConscript('./lib/epoll/SConscript', duplicate=0)
 objs += SConscript('./lib/vhost/SConscript', duplicate=0)
 objs += SConscript('./src/vswitch/SConscript', duplicate=0)
 objs += SConscript('./lib/log/SConscript', duplicate=0)
+objs += SConscript('./lib/dynamic_string/SConscript', duplicate=0)
 
 SConscript('./tests/SConscript', duplicate=0)
 
