@@ -38,8 +38,8 @@ static void ilog_format_msg(struct sds *psds, ilog_level level, const char *form
     char stime[32] = { 0 };
 
     ilog_get_time(stime);
-    sds_put_format(psds, "%s:%s-%s-%d:%s:", stime,
-        __FILE__, __FUNCTION__, __LINE__, ilog_level_to_name(level));
+    sds_put_format(psds, "%s [%s] %s-%d:", stime, ilog_level_to_name(level),
+        __FUNCTION__, __LINE__);
     sds_put_va_args(psds, format, args);
     sds_put_char(psds, '\n');
 }
