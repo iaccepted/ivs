@@ -1,7 +1,7 @@
-#include <sys/stat.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "log/ilog.h"
 
@@ -9,6 +9,7 @@ struct ilog_info ilog_info = {
     .log_stream = NULL,
     .log_level = ILOG_INFO,
     .log_pattern = NULL,
+    .mutex_lock = PTHREAD_MUTEX_INITIALIZER,
 };
 
 static int ilog_valist(ilog_level level, const char *format, va_list args)
@@ -19,8 +20,10 @@ static int ilog_valist(ilog_level level, const char *format, va_list args)
         ilog_info.log_stream = stdout;
     }
 
+    pthread_mutex_lock(&ilog_info.mutex_lock);
     ret = vfprintf(ilog_info.log_stream, format, args);
     fflush(ilog_info.log_stream);
+    pthread_mutex_unlock(&ilog_info.mutex_lock);
     return ret;
 }
 

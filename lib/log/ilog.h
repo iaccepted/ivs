@@ -1,6 +1,7 @@
 #ifndef ILOG_H
 #define ILOG_H
 
+#include <sys/types.h> /* pthread_mutex_t */
 #include <stdio.h>
 
 #include "utils/util.h"
@@ -20,6 +21,7 @@ struct ilog_info {
     FILE *log_stream;
     enum ilog_level log_level;
     char *log_pattern;
+    pthread_mutex_t mutex_lock;
 };
 
 #define ILOG(l, fmt, ...) \
