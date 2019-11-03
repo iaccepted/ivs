@@ -1,10 +1,12 @@
 env = Environment()
 
-cflags = ['-O2', '-g']
+Import('cflags')
+libs = ['pthread']
 paths = ['../']
 
 env.Append(CCFLAGS=cflags)
 env.Append(CPPPATH=paths)
+env.Append(LIBS=libs)
 
 obj = env.Object(Glob('*.c'))
 

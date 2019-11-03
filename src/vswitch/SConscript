@@ -1,6 +1,6 @@
 env = Environment()
 
-cflags = ['-O2', '-g']
+Import('cflags')
 paths = ['../../lib/']
 
 env.Append(CCFLAGS=cflags)

@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#include "utils/util.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,24 +22,15 @@ struct ilog_info {
     char *log_pattern;
 };
 
-#define ILOG_FMT(fmt, ...) \
-    fmt "",__VA_ARGS__ ""
-
-#define ILOG_FMT_FIRST(fmt, ...) \
-    fmt
-
-#define ILOG_FMT_LEFT(fmt, ...) \
-    __VA_ARGS__
-
-#define ILOG(l, ...) \
-    ilog(ILOG_##l, ILOG_FMT("%s:%s:%u:" ILOG_FMT_FIRST(__VA_ARGS__) "\n", \
-        __FILE__, \
+#define ILOG(l, fmt, ...) \
+    ilog(ILOG_##l, "%s:%u:" fmt "\n", \
         __FUNCTION__, \
         __LINE__, \
-        ILOG_FMT_LEFT(__VA_ARGS__,)))
+        ##__VA_ARGS__)
 
-int ilog(ilog_level level, const char *format, ...);
+int ilog(ilog_level level, const char *format, ...) CHECK_FORMAT(2, 3);
 int ilog_init(const char *file_name, ilog_level level);
+void ilog_uninit();
 
 #ifdef __cplusplus
 }

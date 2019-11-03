@@ -21,6 +21,7 @@ int main()
         ILOG(ERR, "%s-%d", "ERR:hello world from ILOG", 222);
     }
 
+    ilog_uninit();
     return 0;
 }
 

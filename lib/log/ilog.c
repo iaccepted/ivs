@@ -15,10 +15,6 @@ static int ilog_valist(ilog_level level, const char *format, va_list args)
 {
     int ret;
 
-    if (level > ilog_info.log_level) {
-        return 0;
-    }
-
     if (ilog_info.log_stream == NULL) {
         ilog_info.log_stream = stdout;
     }
@@ -32,9 +28,15 @@ int ilog(ilog_level level, const char *format, ...)
 {
     va_list args;
 
+    if (level > ilog_info.log_level) {
+        return 0;
+    }
+
     va_start(args, format);
     ilog_valist(level, format, args);
     va_end(args);
+
+    return 0;
 }
 
 static int ilog_set_file_stream(const char *file_name)
@@ -63,3 +65,13 @@ int ilog_init(const char *file_name, ilog_level log_level)
     return 0;
 }
 
+void ilog_uninit()
+{
+    if (ilog_info.log_stream != NULL) {
+        fflush(ilog_info.log_stream);
+        fclose(ilog_info.log_stream);
+        ilog_info.log_stream = NULL;
+    }
+
+    ilog_info.log_level = ILOG_INFO;
+}

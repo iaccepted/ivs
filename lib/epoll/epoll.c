@@ -1,15 +1,11 @@
-#include <sys/epoll.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/prctl.h>
 
 #include "epoll.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define MAX_EPOLL_FD_NUM  (2048)
 #define MAX_EPOLL_EVENT_NUM (128)
@@ -40,6 +36,7 @@ int init_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
         return -1;
     }
     list_init(&pmgr->epoll_node_list);
+    strncpy(pmgr->thread_name, "epoll_loop", sizeof("epoll_loop"));
     pthread_mutex_init(&pmgr->mutex, NULL);
     pmgr->epoll_wait_time = epoll_wait_time;
 
@@ -91,16 +88,15 @@ int start_epoll_loop(const char *thread_name)
     struct epoll_manager *pmgr = &manager;
     int ret;
 
+    if (thread_name != NULL) {
+        memset(pmgr->thread_name, 0, sizeof(pmgr->thread_name));
+        strncpy(pmgr->thread_name, thread_name, MAX_NAME_LEN - 1);
+    }
+
     ret = pthread_create(&pmgr->epoll_loop_tid, NULL, epoll_loop, NULL);
     if (ret != 0) {
         printf("pthread_create error, error = %d\n", ret);
         return -1;
-    }
-
-    if (thread_name != NULL) {
-        pthread_setname_np(pmgr->epoll_loop_tid, thread_name);
-    } else {
-        pthread_setname_np(pmgr->epoll_loop_tid, "epoll_loop");
     }
 
     return 0;
@@ -121,6 +117,7 @@ static void *epoll_loop(void *arg)
     struct epoll_node *node = NULL;
     func_t cb = NULL;
 
+    (void)prctl(PR_SET_NAME, pmgr->thread_name);
     while(1) {
         event_num = epoll_wait(pmgr->epoll_fd, events, MAX_EPOLL_EVENT_NUM, pmgr->epoll_wait_time);
         for (i = 0; i < event_num; i++) {
@@ -168,14 +165,10 @@ static void destroy_all_epoll_nodes()
 {
     struct epoll_manager *pmgr = &manager;
     struct epoll_node *epoll_node = NULL;
-    struct epoll_node *next_node = NULL;
+    struct epoll_node *next = NULL;
 
-    LIST_FOR_EACH_SAFE(epoll_node, next_node, node, &pmgr->epoll_node_list) {
+    LIST_FOR_EACH_SAFE(epoll_node, next, node, &pmgr->epoll_node_list) {
         list_remove(&epoll_node->node);
         free(epoll_node);
     }
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -1,6 +1,6 @@
 env = Environment()
 
-cflags = ['-O3', '-g']
+Import('cflags')
 paths = ['../lib']
 libs = ['pthread']
 

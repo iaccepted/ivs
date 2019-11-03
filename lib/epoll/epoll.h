@@ -1,12 +1,14 @@
+#ifndef IVS_EPOLL_H
+#define IVS_EPOLL_H 1
+
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <inttypes.h>
 #include <pthread.h>
 
-#ifndef IVS_EPOLL_H
-#define IVS_EPOLL_H 1
-
 #include "list/list.h"
+
+#define MAX_NAME_LEN 17
 
 //pre declare
 struct epoll_node;
@@ -15,6 +17,7 @@ typedef void *(*func_t)(void *);
 struct epoll_manager{
     int epoll_fd;
     pthread_t epoll_loop_tid;
+    char thread_name[MAX_NAME_LEN];
     int epoll_wait_time;
     struct list epoll_node_list;
     pthread_mutex_t mutex;
@@ -29,5 +32,6 @@ void deinit_epoll_manager();
 int del_epoll_event(int fd);
 int add_epoll_event(int fd, uint32_t _event, func_t cb, void *arg);
 int start_epoll_loop(const char *thread_name);
+void stop_epoll_loop();
 
 #endif

@@ -135,7 +135,7 @@ static int send_vhost_message(int sockfd, struct vhost_user_msg *msg)
         VHOST_USER_HDR_SIZE + msg->size, NULL, 0);
 }
 
-static int send_vhost_reply(int sockfd, struct vhost_user_msg *msg)
+static int __attribute__((unused)) send_vhost_reply(int sockfd, struct vhost_user_msg *msg)
 {
     if (!msg)
         return 0;
@@ -203,6 +203,8 @@ int vhost_user_msg_handler(int fd)
         default:
             break;
     }
+
+    return 0;
 }
 
 /* unix socket, as server*/
