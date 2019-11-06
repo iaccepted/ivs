@@ -8,12 +8,12 @@ int main()
 
     /* this will no log */
     for(i = 0; i < 100; i++) {
-        ilog(ILOG_INFO, "%s", "INFO:hello world from ilog");
+        ilog(__FUNCTION__, __LINE__, ILOG_INFO, "%s", "INFO:hello world from ilog");
     }
 
     /* log normally */
     for(i = 0; i < 100; i++) {
-        ilog(ILOG_ERR, "%s", "hello world from ilog");
+        ilog(__FUNCTION__, __LINE__, ILOG_ERR, "%s", "hello world from ilog");
     }
 
     /* log normally */

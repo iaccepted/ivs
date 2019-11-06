@@ -25,9 +25,9 @@ struct ilog_info {
 };
 
 #define ILOG(l, fmt, ...) \
-    ilog(ILOG_##l, fmt, ##__VA_ARGS__)
+    ilog(__FUNCTION__, __LINE__, ILOG_##l, fmt, ##__VA_ARGS__)
 
-int ilog(ilog_level level, const char *format, ...) CHECK_FORMAT(2, 3);
+int ilog(const char *func, int line, ilog_level level, const char *format, ...) CHECK_FORMAT(4, 5);
 int ilog_init(const char *file_name, ilog_level level);
 void ilog_uninit();
 

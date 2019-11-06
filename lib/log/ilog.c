@@ -1,3 +1,5 @@
+#include <unistd.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
@@ -7,7 +9,7 @@
 #include "dynamic_string/dynamic_str.h"
 
 static char *ilog_level_names[] = {
-    "error",
+    "err",
     "warning",
     "info",
     "extral",
@@ -33,18 +35,22 @@ static char *ilog_get_time(char *time_str)
     return time_str;
 }
 
-static void ilog_format_msg(struct sds *psds, ilog_level level, const char *format, va_list args)
+static void ilog_format_msg(struct sds *psds, const char *func, int line,
+    ilog_level level, const char *format, va_list args)
 {
     char stime[32] = { 0 };
+    pthread_t pid;
+
+    pid = getpid();
 
     ilog_get_time(stime);
-    sds_put_format(psds, "%s [%s] %s-%d:", stime, ilog_level_to_name(level),
-        __FUNCTION__, __LINE__);
+    sds_put_format(psds, "%s|%s|%lu|%s[%d]: ", stime, ilog_level_to_name(level),
+        pid, func, line);
     sds_put_va_args(psds, format, args);
     sds_put_char(psds, '\n');
 }
 
-static int ilog_valist(ilog_level level, const char *format, va_list args)
+static int ilog_valist(const char *func, int line, ilog_level level, const char *format, va_list args)
 {
     int ret;
     struct sds sds = SDS_INITIALIZER;
@@ -53,7 +59,7 @@ static int ilog_valist(ilog_level level, const char *format, va_list args)
         ilog_info.log_stream = stdout;
     }
 
-    ilog_format_msg(&sds, level, format, args);
+    ilog_format_msg(&sds, func, line, level, format, args);
     pthread_mutex_lock(&ilog_info.mutex_lock);
     ret = fprintf(ilog_info.log_stream, sds_str(&sds));
     fflush(ilog_info.log_stream);
@@ -63,7 +69,7 @@ static int ilog_valist(ilog_level level, const char *format, va_list args)
     return ret;
 }
 
-int ilog(ilog_level level, const char *format, ...)
+int ilog(const char *func, int line, ilog_level level, const char *format, ...)
 {
     int ret;
     va_list args;
@@ -73,7 +79,7 @@ int ilog(ilog_level level, const char *format, ...)
     }
 
     va_start(args, format);
-    ret = ilog_valist(level, format, args);
+    ret = ilog_valist(func, line, level, format, args);
     va_end(args);
 
     return ret;
@@ -85,7 +91,7 @@ static int ilog_set_file_stream(const char *file_name)
 
     f = fopen(file_name, "a+");
     if (f == NULL) {
-        ilog(ILOG_ERR, "fopen failed, error = %s", strerror(errno));
+        ILOG(ERR, "fopen failed, error = %s", strerror(errno));
         return -1;
     }
 
