@@ -108,6 +108,7 @@ void stop_epoll_loop()
 
     pthread_join(pmgr->epoll_loop_tid, NULL);
 }
+
 static void *epoll_loop(void *arg)
 {
     struct epoll_manager *pmgr = &manager;

@@ -8,6 +8,8 @@
 
 #include "vhost_user.h"
 #include "epoll/epoll.h"
+#include "log/ilog.h"
+#include "netdev/netdev_virtio.h"
 
 #define MAX_BACKLOG (256)
 
@@ -148,21 +150,23 @@ static int __attribute__((unused)) send_vhost_reply(int sockfd, struct vhost_use
     return send_vhost_message(sockfd, msg);
 }
 
-int vhost_user_msg_handler(int fd)
+static void *vhost_user_msg_handler(void *arg)
 {
     struct vhost_user_msg msg;
+    struct netdev_virtio *dev = (struct netdev_virtio *)arg;
     int ret;
 
-    ret = read_vhost_message(fd, &msg);
+    ret = read_vhost_message(dev->vskt.fd, &msg);
     if (ret <= 0) {
         if (ret < 0) {
         } else {
         }
-        return -1;
+        return NULL;
     }
 
     if (msg.request > VHOST_USER_MAX) {
-        return -1;
+        ILOG(ERR, "vhost msg is error, request = %d", msg.request);
+        return NULL;
     }
 
     switch(msg.request) {
@@ -204,7 +208,7 @@ int vhost_user_msg_handler(int fd)
             break;
     }
 
-    return 0;
+    return NULL;
 }
 
 /* unix socket, as server*/
@@ -217,7 +221,7 @@ int create_vhost_user(vhost_user_socket *vsocket)
     if (fd < 0) {
         return -1;
     }
-    printf("vhost user socket created, fd = %d", fd);
+    ILOG(INFO, "vhost user socket created, fd = %d", fd);
 
     memset(un, 0, sizeof(*un));
     un->sun_family = AF_UNIX;
@@ -228,7 +232,7 @@ int create_vhost_user(vhost_user_socket *vsocket)
     return 0;
 }
 
-int vhost_user_start_server(vhost_user_socket *vsocket)
+int start_vhost_user_server(vhost_user_socket *vsocket)
 {
     int ret;
     int fd = vsocket->fd;
@@ -236,20 +240,20 @@ int vhost_user_start_server(vhost_user_socket *vsocket)
 
     ret = bind(fd, (struct sockaddr *)&vsocket->un, sizeof(vsocket->un));
     if (ret < 0) {
-        printf("failed to bind to %s: %s; remove it and try again\n",
+        ILOG(ERR, "failed to bind to %s: %s; remove it and try again",
             path, strerror(errno));
         goto err;
     }
-    printf("bind to %s\n", path);
+    ILOG(INFO, "bind to %s", path);
 
     ret = listen(fd, MAX_BACKLOG);
     if (ret < 0) {
         goto err;
     }
 
-    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, NULL, vsocket);
+    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, vhost_user_msg_handler, vsocket);
     if (ret != 0) {
-        printf("epoll operations failed.");
+        ILOG(ERR, "epoll operations failed.");
         goto err;
     }
     return 0;
@@ -258,4 +262,3 @@ err:
     close(fd);
     return -1;
 }
-

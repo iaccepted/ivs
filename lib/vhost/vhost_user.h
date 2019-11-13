@@ -1,11 +1,17 @@
+#ifndef __VHOST_USER_H__
+#define __VHOST_USER_H__ 1
+
 #include <inttypes.h>
 #include <sys/un.h>
+
+#include "netdev/netdev.h"
 
 typedef struct vhost_user_socket {
     char *path;
     struct sockaddr_un un;
     int fd;
     int type;
+    struct netdev_virtio *dev;
 } vhost_user_socket;
 
 /* refer to qemu 4.0 hw/virtio/vhost_user.h */
@@ -101,6 +107,7 @@ typedef struct vhost_user_msg {
 
 #define VHOST_USER_HDR_SIZE ((size_t) &(((vhost_user_msg *)0)->payload.u64))
 
-int vhost_user_msg_handler(int fd);
 int create_vhost_user(vhost_user_socket *vsocket);
-int vhost_user_start_server(vhost_user_socket *vsocket);
+int start_vhost_user_server(vhost_user_socket *vsocket);
+
+#endif /* __VHOST_USER_H__ */
