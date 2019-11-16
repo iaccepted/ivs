@@ -1,5 +1,5 @@
-#ifndef ILOG_H
-#define ILOG_H
+#ifndef __ILOG_H__
+#define __ILOG_H__ 1
 
 #include <sys/types.h> /* pthread_mutex_t */
 #include <stdio.h>

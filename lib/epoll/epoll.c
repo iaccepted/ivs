@@ -39,6 +39,7 @@ int init_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
     strncpy(pmgr->thread_name, "epoll_loop", sizeof("epoll_loop"));
     pthread_mutex_init(&pmgr->mutex, NULL);
     pmgr->epoll_wait_time = epoll_wait_time;
+    atom8_init(&pmgr->loop_exit);
 
     return 0;
 }
@@ -106,6 +107,7 @@ void stop_epoll_loop()
 {
     struct epoll_manager *pmgr = &manager;
 
+    atom8_set(&pmgr->loop_exit, 1);
     pthread_join(pmgr->epoll_loop_tid, NULL);
 }
 
@@ -125,6 +127,9 @@ static void *epoll_loop(void *arg)
             node = events[i].data.ptr;
             cb = node->cb;
             cb(node->arg);
+        }
+        if (atom8_get(&pmgr->loop_exit) == 1) {
+            break;
         }
     }
 

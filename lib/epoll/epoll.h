@@ -1,5 +1,5 @@
-#ifndef IVS_EPOLL_H
-#define IVS_EPOLL_H 1
+#ifndef __EPOLL_H__
+#define __EPOLL_H__ 1
 
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -7,6 +7,7 @@
 #include <pthread.h>
 
 #include "list/list.h"
+#include "atom/atom.h"
 
 #define MAX_NAME_LEN 17
 
@@ -21,6 +22,7 @@ struct epoll_manager{
     int epoll_wait_time;
     struct list epoll_node_list;
     pthread_mutex_t mutex;
+    atom8_t loop_exit;
 };
 
 int init_epoll_manager(uint32_t epoll_size, int epoll_wait_time);

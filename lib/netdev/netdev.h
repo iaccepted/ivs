@@ -3,6 +3,8 @@
 
 #include <inttypes.h>
 
+#include "list/list.h"
+
 //#include <rte_mbuf.h>
 
 #ifdef __cplusplus
@@ -26,6 +28,7 @@ struct netdev {
     uint32_t dev_id;
     struct netdev_info *info;
     struct netdev_class *class;
+    struct list node;
 };
 
 struct packet_batch {
