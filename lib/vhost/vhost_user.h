@@ -11,8 +11,14 @@ typedef struct vhost_user_socket {
     struct sockaddr_un un;
     int fd;
     int type;
-    struct netdev_virtio *dev;
 } vhost_user_socket;
+
+typedef struct vhost_user_server {
+    char name[MAX_PORT_NAME_LEN];
+    struct netdev_virtio *dev;
+    vhost_user_socket *vsock;
+    struct list conn_list;
+} vhost_user_server;
 
 /* refer to qemu 4.0 hw/virtio/vhost_user.h */
 #define VHOST_MEMORY_MAX_NREGIONS 8

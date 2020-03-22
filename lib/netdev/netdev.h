@@ -11,6 +11,7 @@
 extern "C" {
 #endif
 
+#define MAX_PORT_NAME_LEN 64
 #define MAX_PKT_BURST 64
 
 struct netdev_class;

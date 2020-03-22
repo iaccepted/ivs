@@ -23,15 +23,21 @@ daemon_exit(void)
     ilog_uninit();
 }
 
+static void
+daemon_register_signal()
+{
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+}
+
 int main()
 {
     int ret;
-    struct netdev_virtio dev;
+    vhost_user_socket vsock;
 
     ilog_init("/var/log/ivs/ivs.log", ILOG_INFO);
 
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
+    daemon_register_signal();
 
     ret = init_epoll_manager(120, 10);
     if (ret != 0) {
@@ -39,10 +45,9 @@ int main()
         return -1;
     }
 
-    dev.vskt.path = "/var/run/tap1";
-    dev.vskt.dev = &dev;
-    create_vhost_user(&dev.vskt);
-    start_vhost_user_server(&dev.vskt);
+    vsock.path = "/var/run/tap1";
+    create_vhost_user(&vsock);
+    start_vhost_user_server(&vsock);
     start_epoll_loop("epoll_loop");
 
     app_running = 1;
@@ -50,6 +55,8 @@ int main()
         sleep(1);
     }
 
+    close(vsock.fd);
+    unlink(vsock.path);
     daemon_exit();
     return 0;
 }
