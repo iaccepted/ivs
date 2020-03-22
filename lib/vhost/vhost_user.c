@@ -10,6 +10,8 @@
 #include "epoll/epoll.h"
 #include "log/ilog.h"
 #include "netdev/netdev_virtio.h"
+#include "memory/memory.h"
+#include "dynamic_string/dynamic_str.h"
 
 #define MAX_BACKLOG (256)
 
@@ -235,24 +237,30 @@ static void *vhost_user_create_conn(void *arg)
 }
 
 /* unix socket, as server*/
-int create_vhost_user(vhost_user_socket *vsocket)
+vhost_user_socket *create_vhost_user(char *port_name)
 {
     int fd;
-    struct sockaddr_un *un = &vsocket->un;
+    vhost_user_socket *vsock = NULL;
+    struct sockaddr_un *un = NULL;
+    struct sds sds = SDS_INITIALIZER;
 
+    vsock = (vhost_user_socket *)xzalloc(sizeof(*vsock));
     fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (fd < 0) {
-        return -1;
+        xfree(vsock);
+        return NULL;
     }
     ILOG(INFO, "vhost user socket created, fd = %d", fd);
 
     memset(un, 0, sizeof(*un));
     un->sun_family = AF_UNIX;
-    strncpy(un->sun_path, vsocket->path, sizeof(un->sun_path));
+    sds_put_format(&sds, "/var/run/%s", port_name);
+    strncpy(un->sun_path, sds_str(&sds), sizeof(un->sun_path));
     un->sun_path[sizeof(un->sun_path) - 1] = '\0';
 
-    vsocket->fd = fd;
-    return 0;
+    vsock->fd = fd;
+    sds_deinit(&sds);
+    return vsock;
 }
 
 int start_vhost_user_server(vhost_user_socket *vsocket)

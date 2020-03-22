@@ -10,7 +10,7 @@ extern "C" {
 
 struct netdev_virtio {
     struct netdev up;
-    vhost_user_socket vskt;
+    vhost_user_server *server;
 };
 
 #ifdef __cplusplus

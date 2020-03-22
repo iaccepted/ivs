@@ -17,6 +17,8 @@ typedef struct vhost_user_server {
     char name[MAX_PORT_NAME_LEN];
     struct netdev_virtio *dev;
     vhost_user_socket *vsock;
+    int kick_fd;
+    int call_fd;
     struct list conn_list;
 } vhost_user_server;
 
@@ -113,7 +115,7 @@ typedef struct vhost_user_msg {
 
 #define VHOST_USER_HDR_SIZE ((size_t) &(((vhost_user_msg *)0)->payload.u64))
 
-int create_vhost_user(vhost_user_socket *vsocket);
+vhost_user_socket *create_vhost_user(char *port_name);
 int start_vhost_user_server(vhost_user_socket *vsocket);
 
 #endif /* __VHOST_USER_H__ */

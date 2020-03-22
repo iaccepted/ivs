@@ -33,7 +33,7 @@ daemon_register_signal()
 int main()
 {
     int ret;
-    vhost_user_socket vsock;
+    vhost_user_socket *vsock = NULL;
 
     ilog_init("/var/log/ivs/ivs.log", ILOG_INFO);
 
@@ -42,12 +42,15 @@ int main()
     ret = init_epoll_manager(120, 10);
     if (ret != 0) {
         ILOG(ERR, "init epoll manager error.");
-        return -1;
+        goto err;
     }
 
-    vsock.path = "/var/run/tap1";
-    create_vhost_user(&vsock);
-    start_vhost_user_server(&vsock);
+    vsock = create_vhost_user("tap1");
+    if (vsock == NULL) {
+        ILOG(ERR, "create vhost user error.");
+        goto err;
+    }
+    start_vhost_user_server(vsock);
     start_epoll_loop("epoll_loop");
 
     app_running = 1;
@@ -55,8 +58,9 @@ int main()
         sleep(1);
     }
 
-    close(vsock.fd);
-    unlink(vsock.path);
+err:
+    close(vsock->fd);
+    unlink(vsock->path);
     daemon_exit();
     return 0;
 }
