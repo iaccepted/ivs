@@ -153,10 +153,10 @@ static int __attribute__((unused)) send_vhost_reply(int sockfd, struct vhost_use
 static void *vhost_user_msg_handler(void *arg)
 {
     struct vhost_user_msg msg;
-    struct netdev_virtio *dev = (struct netdev_virtio *)arg;
+    vhost_user_socket *vsock = (vhost_user_socket *)arg;
     int ret;
 
-    ret = read_vhost_message(dev->vskt.fd, &msg);
+    ret = read_vhost_message(vsock->fd, &msg);
     if (ret <= 0) {
         if (ret < 0) {
         } else {
@@ -211,6 +211,29 @@ static void *vhost_user_msg_handler(void *arg)
     return NULL;
 }
 
+static void *vhost_user_create_conn(void *arg)
+{
+    vhost_user_socket *vsock = (vhost_user_socket *)arg;
+    vhost_user_socket *conn = NULL;
+    int fd;
+    int ret;
+
+    fd = accept(vsock->fd, NULL, NULL);
+    if (fd < 0) {
+        return NULL;
+    }
+
+    conn = malloc(sizeof(vhost_user_socket));
+    conn->fd = fd;
+    ret = add_epoll_event(conn->fd, EPOLLIN|EPOLLET, vhost_user_msg_handler, conn);
+    if (ret != 0) {
+        ILOG(ERR, "epoll operation failed.");
+        return NULL;
+    }
+
+    return conn;
+}
+
 /* unix socket, as server*/
 int create_vhost_user(vhost_user_socket *vsocket)
 {
@@ -251,7 +274,7 @@ int start_vhost_user_server(vhost_user_socket *vsocket)
         goto err;
     }
 
-    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, vhost_user_msg_handler, vsocket);
+    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, vhost_user_create_conn, vsocket);
     if (ret != 0) {
         ILOG(ERR, "epoll operations failed.");
         goto err;

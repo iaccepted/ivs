@@ -4,14 +4,23 @@
 #include "netdev/netdev_virtio.h"
 #include "log/ilog.h"
 
+uint16_t app_running = 0;
+
 static void
 signal_handler(int signum)
 {
     if (signum == SIGINT || signum == SIGTERM) {
         ILOG(INFO, "prepare to exit...");
         signal(signum, SIG_DFL);
-        kill(getpid(), signum);
+        app_running = 0;
     }
+}
+
+static void
+daemon_exit(void)
+{
+    stop_epoll_loop();
+    ilog_uninit();
 }
 
 int main()
@@ -35,9 +44,12 @@ int main()
     create_vhost_user(&dev.vskt);
     start_vhost_user_server(&dev.vskt);
     start_epoll_loop("epoll_loop");
-    while(1) {
-    }
-    stop_epoll_loop();
 
+    app_running = 1;
+    while(app_running) {
+        sleep(1);
+    }
+
+    daemon_exit();
     return 0;
 }
