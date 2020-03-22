@@ -115,7 +115,10 @@ typedef struct vhost_user_msg {
 
 #define VHOST_USER_HDR_SIZE ((size_t) &(((vhost_user_msg *)0)->payload.u64))
 
-vhost_user_socket *create_vhost_user(char *port_name);
-int start_vhost_user_server(vhost_user_socket *vsocket);
+vhost_user_socket *create_vhost_user_socket(char *port_name);
+int destroy_vhost_user_socket(vhost_user_socket *vsock);
+vhost_user_server *create_vhost_user_server(char *port_name);
+int destroy_vhost_user_server(vhost_user_server *server);
+int start_vhost_user_server(vhost_user_server *server);
 
 #endif /* __VHOST_USER_H__ */

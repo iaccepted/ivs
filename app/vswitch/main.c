@@ -33,7 +33,7 @@ daemon_register_signal()
 int main()
 {
     int ret;
-    vhost_user_socket *vsock = NULL;
+    vhost_user_server *server = NULL;
 
     ilog_init("/var/log/ivs/ivs.log", ILOG_INFO);
 
@@ -45,12 +45,12 @@ int main()
         goto err;
     }
 
-    vsock = create_vhost_user("tap1");
-    if (vsock == NULL) {
+    server = create_vhost_user_server("tap1");
+    if (server == NULL) {
         ILOG(ERR, "create vhost user error.");
         goto err;
     }
-    start_vhost_user_server(vsock);
+    start_vhost_user_server(server);
     start_epoll_loop("epoll_loop");
 
     app_running = 1;
@@ -59,8 +59,7 @@ int main()
     }
 
 err:
-    close(vsock->fd);
-    unlink(vsock->path);
+    destroy_vhost_user_server(server);
     daemon_exit();
     return 0;
 }

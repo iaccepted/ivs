@@ -237,7 +237,7 @@ static void *vhost_user_create_conn(void *arg)
 }
 
 /* unix socket, as server*/
-vhost_user_socket *create_vhost_user(char *port_name)
+vhost_user_socket *create_vhost_user_socket(char *port_name)
 {
     int fd;
     vhost_user_socket *vsock = NULL;
@@ -263,26 +263,76 @@ vhost_user_socket *create_vhost_user(char *port_name)
     return vsock;
 }
 
-int start_vhost_user_server(vhost_user_socket *vsocket)
+int destroy_vhost_user_socket(vhost_user_socket *vsock)
 {
-    int ret;
-    int fd = vsocket->fd;
-    const char *path = vsocket->path;
+    if (vsock == NULL) {
+        return 0;
+    }
 
-    ret = bind(fd, (struct sockaddr *)&vsocket->un, sizeof(vsocket->un));
-    if (ret < 0) {
-        ILOG(ERR, "failed to bind to %s: %s; remove it and try again",
-            path, strerror(errno));
+    close(vsock->fd);
+    unlink(vsock->path);
+    xfree(vsock);
+    return 0;
+}
+
+vhost_user_server *create_vhost_user_server(char *port_name)
+{
+    vhost_user_server *server = NULL;
+    vhost_user_socket *vsock = NULL;
+
+    server = xzalloc(sizeof(*server));
+    list_init(&server->conn_list);
+    vsock = create_vhost_user_socket(port_name);
+    if (vsock == NULL) {
+        ILOG(ERR, "create vhost user socket error.");
         goto err;
     }
-    ILOG(INFO, "bind to %s", path);
+
+    server->vsock = vsock;
+    return server;
+err:
+    xfree(server);
+    return NULL;
+}
+
+int destroy_vhost_user_server(vhost_user_server *server)
+{
+    if (server == NULL) {
+        return 0;
+    }
+
+    (void)destroy_vhost_user_socket(server->vsock);
+    xfree(server);
+    return 0;
+}
+
+int start_vhost_user_server(vhost_user_server *server)
+{
+    int ret;
+    int fd;
+    vhost_user_socket *vsock = NULL;
+
+    if (server == NULL || server->vsock == NULL) {
+        ILOG(ERR, "Invalid parameter.");
+        goto err;
+    }
+
+    vsock = server->vsock;
+    fd = vsock->fd;
+    ret = bind(fd, (struct sockaddr *)&vsock->un, sizeof(vsock->un));
+    if (ret < 0) {
+        ILOG(ERR, "failed to bind to %s: %s; remove it and try again",
+            vsock->path, strerror(errno));
+        goto err;
+    }
+    ILOG(INFO, "bind to %s", vsock->path);
 
     ret = listen(fd, MAX_BACKLOG);
     if (ret < 0) {
         goto err;
     }
 
-    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, vhost_user_create_conn, vsocket);
+    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, vhost_user_create_conn, vsock);
     if (ret != 0) {
         ILOG(ERR, "epoll operations failed.");
         goto err;
@@ -290,6 +340,5 @@ int start_vhost_user_server(vhost_user_socket *vsocket)
     return 0;
 
 err:
-    close(fd);
     return -1;
 }

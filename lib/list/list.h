@@ -18,7 +18,7 @@ struct list
 static inline void list_init(struct list *);
 static inline void list_insert(struct list *, struct list *);
 static inline struct list * list_remove(struct list *);
-static inline void ovs_list_push_front(struct list *, struct list *);
+static inline void list_push_front(struct list *, struct list *);
 static inline void list_push_back(struct list *, struct list *);
 static inline bool list_is_empty(const struct list *);
 
@@ -57,7 +57,7 @@ static inline struct list *list_remove(struct list *elem)
     return elem->next;
 }
 
-static inline void ovs_list_push_front(struct list *list, struct list *elem)
+static inline void list_push_front(struct list *list, struct list *elem)
 {
     list_insert(list->next, elem);
 }
