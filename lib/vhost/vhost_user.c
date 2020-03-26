@@ -15,10 +15,15 @@
 
 #define MAX_BACKLOG (256)
 
+static void *vhost_user_create_conn(void *);
+static void vhost_user_destroy_conn(vhost_user_socket *);
+static vhost_user_socket *vhost_user_create_socket(char *);
+static void vhost_user_destroy_socket(vhost_user_socket *);
+
 /*return bytes# of read on success or negative val on failure.
   read vhost_user_msg header and fds in ancillary data
 */
-static int read_fd_and_message_hdr(int sockfd, char *buf, int buflen, int *fds, int fd_num)
+static int vhost_read_fd_and_message_hdr(int sockfd, char *buf, int buflen, int *fds, int fd_num)
 {
     struct iovec iov;
     struct msghdr msgh;
@@ -61,11 +66,11 @@ static int read_fd_and_message_hdr(int sockfd, char *buf, int buflen, int *fds, 
 }
 
 /* read message from qemu */
-static int read_vhost_message(int sockfd, vhost_user_msg *msg)
+static int vhost_read_message(int sockfd, vhost_user_msg *msg)
 {
     int ret;
 
-    ret = read_fd_and_message_hdr(sockfd, (char *)msg, VHOST_USER_HDR_SIZE,
+    ret = vhost_read_fd_and_message_hdr(sockfd, (char *)msg, VHOST_USER_HDR_SIZE,
         msg->fds, VHOST_MEMORY_MAX_NREGIONS);
     if (ret <= 0)
         return ret;
@@ -89,7 +94,7 @@ static int read_vhost_message(int sockfd, vhost_user_msg *msg)
     return ret;
 }
 
-static int send_fd_and_message(int fd, char *buf, int buf_len, int *fds, int fd_num)
+static int vhost_send_fd_and_message(int fd, char *buf, int buf_len, int *fds, int fd_num)
 {
     struct iovec iov;
     struct msghdr msgh;
@@ -130,16 +135,16 @@ static int send_fd_and_message(int fd, char *buf, int buf_len, int *fds, int fd_
     return ret;
 }
 
-static int send_vhost_message(int sockfd, struct vhost_user_msg *msg)
+static int vhost_send_message(int sockfd, struct vhost_user_msg *msg)
 {
     if (!msg)
         return 0;
 
-    return send_fd_and_message(sockfd, (char *)msg,
+    return vhost_send_fd_and_message(sockfd, (char *)msg,
         VHOST_USER_HDR_SIZE + msg->size, NULL, 0);
 }
 
-static int __attribute__((unused)) send_vhost_reply(int sockfd, struct vhost_user_msg *msg)
+static int __attribute__((unused)) vhost_send_reply(int sockfd, struct vhost_user_msg *msg)
 {
     if (!msg)
         return 0;
@@ -149,7 +154,7 @@ static int __attribute__((unused)) send_vhost_reply(int sockfd, struct vhost_use
     msg->flags &= ~VHOST_USER_NEED_REPLY;
     msg->flags |= (VHOST_USER_VERSION | VHOST_USER_REPLY_MASK);
 
-    return send_vhost_message(sockfd, msg);
+    return vhost_send_message(sockfd, msg);
 }
 
 static void *vhost_user_msg_handler(void *arg)
@@ -158,7 +163,7 @@ static void *vhost_user_msg_handler(void *arg)
     vhost_user_socket *vsock = (vhost_user_socket *)arg;
     int ret;
 
-    ret = read_vhost_message(vsock->fd, &msg);
+    ret = vhost_read_message(vsock->fd, &msg);
     if (ret <= 0) {
         if (ret < 0) {
         } else {
@@ -170,6 +175,8 @@ static void *vhost_user_msg_handler(void *arg)
         ILOG(ERR, "vhost msg is error, request = %d", msg.request);
         return NULL;
     }
+
+    ILOG(INFO, "msg id = %u", msg.request);
 
     switch(msg.request) {
         case VHOST_USER_GET_FEATURES:
@@ -215,29 +222,49 @@ static void *vhost_user_msg_handler(void *arg)
 
 static void *vhost_user_create_conn(void *arg)
 {
-    vhost_user_socket *vsock = (vhost_user_socket *)arg;
+    vhost_user_server *server = (vhost_user_server *)arg;
     vhost_user_socket *conn = NULL;
+    vhost_user_socket *vsock = NULL;
     int fd;
     int ret;
+
+    if (arg == NULL) {
+        return NULL;
+    }
+
+    vsock = server->vsock;
 
     fd = accept(vsock->fd, NULL, NULL);
     if (fd < 0) {
         return NULL;
     }
 
-    conn = malloc(sizeof(vhost_user_socket));
+    conn = xzalloc(sizeof(vhost_user_socket));
     conn->fd = fd;
-    ret = add_epoll_event(conn->fd, EPOLLIN|EPOLLET, vhost_user_msg_handler, conn);
+    ret = epoll_add_event(conn->fd, EPOLLIN|EPOLLET, vhost_user_msg_handler, conn);
     if (ret != 0) {
+        vhost_user_destroy_conn(conn);
         ILOG(ERR, "epoll operation failed.");
         return NULL;
     }
 
+    list_insert(&server->conn_list, &conn->node);
     return conn;
 }
 
+static void vhost_user_destroy_conn(vhost_user_socket *conn)
+{
+    if (conn == NULL) {
+        return;
+    }
+
+    close(conn->fd);
+    xfree(conn);
+    return;
+}
+
 /* unix socket, as server*/
-vhost_user_socket *create_vhost_user_socket(char *port_name)
+static vhost_user_socket *vhost_user_create_socket(char *port_name)
 {
     int fd;
     vhost_user_socket *vsock = NULL;
@@ -252,6 +279,7 @@ vhost_user_socket *create_vhost_user_socket(char *port_name)
     }
     ILOG(INFO, "vhost user socket created, fd = %d", fd);
 
+    un = &vsock->un;
     memset(un, 0, sizeof(*un));
     un->sun_family = AF_UNIX;
     sds_put_format(&sds, "/var/run/%s", port_name);
@@ -259,30 +287,32 @@ vhost_user_socket *create_vhost_user_socket(char *port_name)
     un->sun_path[sizeof(un->sun_path) - 1] = '\0';
 
     vsock->fd = fd;
+    strncpy(vsock->path, sds_str(&sds), sizeof(vsock->path));
+    vsock->path[sizeof(vsock->path) - 1] = 0;
     sds_deinit(&sds);
     return vsock;
 }
 
-int destroy_vhost_user_socket(vhost_user_socket *vsock)
+static void vhost_user_destroy_socket(vhost_user_socket *vsock)
 {
     if (vsock == NULL) {
-        return 0;
+        return;
     }
 
     close(vsock->fd);
     unlink(vsock->path);
     xfree(vsock);
-    return 0;
+    return;
 }
 
-vhost_user_server *create_vhost_user_server(char *port_name)
+vhost_user_server *vhost_user_create_server(char *port_name)
 {
     vhost_user_server *server = NULL;
     vhost_user_socket *vsock = NULL;
 
     server = xzalloc(sizeof(*server));
     list_init(&server->conn_list);
-    vsock = create_vhost_user_socket(port_name);
+    vsock = vhost_user_create_socket(port_name);
     if (vsock == NULL) {
         ILOG(ERR, "create vhost user socket error.");
         goto err;
@@ -290,23 +320,30 @@ vhost_user_server *create_vhost_user_server(char *port_name)
 
     server->vsock = vsock;
     return server;
+
 err:
     xfree(server);
     return NULL;
 }
 
-int destroy_vhost_user_server(vhost_user_server *server)
+int vhost_user_destroy_server(vhost_user_server *server)
 {
+    vhost_user_socket *conn = NULL;
+    vhost_user_socket *next = NULL;
+
     if (server == NULL) {
         return 0;
     }
 
-    (void)destroy_vhost_user_socket(server->vsock);
+    LIST_FOR_EACH_SAFE(conn, next, node, &server->conn_list) {
+        vhost_user_destroy_conn(conn);
+    }
+    vhost_user_destroy_socket(server->vsock);
     xfree(server);
     return 0;
 }
 
-int start_vhost_user_server(vhost_user_server *server)
+int vhost_user_start_server(vhost_user_server *server)
 {
     int ret;
     int fd;
@@ -332,7 +369,7 @@ int start_vhost_user_server(vhost_user_server *server)
         goto err;
     }
 
-    ret = add_epoll_event(fd, EPOLLIN|EPOLLET, vhost_user_create_conn, vsock);
+    ret = epoll_add_event(fd, EPOLLIN|EPOLLET, vhost_user_create_conn, server);
     if (ret != 0) {
         ILOG(ERR, "epoll operations failed.");
         goto err;

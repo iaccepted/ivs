@@ -20,12 +20,12 @@ struct epoll_node {
 
 struct epoll_manager manager;
 
-static void destroy_epoll_node(int fd);
-static void destroy_all_epoll_nodes();
+static void epoll_destroy_node(int fd);
+static void epoll_destroy_all_nodes();
 static struct epoll_node *create_epoll_node(int fd, func_t cb, void *arg);
 static void *epoll_loop(void *arg);
 
-int init_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
+int epoll_init_manager(uint32_t epoll_size, int epoll_wait_time)
 {
     struct epoll_manager *pmgr = &manager;
     memset(pmgr, 0, sizeof(struct epoll_manager));
@@ -44,14 +44,14 @@ int init_epoll_manager(uint32_t epoll_size, int epoll_wait_time)
     return 0;
 }
 
-void deinit_epoll_manager()
+void epoll_deinit_manager()
 {
-    destroy_all_epoll_nodes();
+    epoll_destroy_all_nodes();
     close(manager.epoll_fd);
     return;
 }
 
-int add_epoll_event(int fd, uint32_t _event, func_t cb, void *arg)
+int epoll_add_event(int fd, uint32_t _event, func_t cb, void *arg)
 {
     int ret = 0;
     struct epoll_node *node = NULL;
@@ -74,17 +74,17 @@ int add_epoll_event(int fd, uint32_t _event, func_t cb, void *arg)
     return ret;
 }
 
-int del_epoll_event(int fd)
+int epoll_delete_event(int fd)
 {
     struct epoll_manager *pmgr = &manager;
     int ret = 0;
 
     ret = epoll_ctl(pmgr->epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-    destroy_epoll_node(fd);
+    epoll_destroy_node(fd);
     return ret;
 }
 
-int start_epoll_loop(const char *thread_name)
+int epoll_start_loop(const char *thread_name)
 {
     struct epoll_manager *pmgr = &manager;
     int ret;
@@ -103,7 +103,7 @@ int start_epoll_loop(const char *thread_name)
     return 0;
 }
 
-void stop_epoll_loop()
+void epoll_stop_loop()
 {
     struct epoll_manager *pmgr = &manager;
 
@@ -152,7 +152,7 @@ static struct epoll_node *create_epoll_node(int fd, func_t cb, void *arg)
     return node;
 }
 
-static void destroy_epoll_node(int fd)
+static void epoll_destroy_node(int fd)
 {
     struct epoll_node *epoll_node = NULL;
     struct epoll_node *next = NULL;
@@ -167,7 +167,7 @@ static void destroy_epoll_node(int fd)
     }
 }
 
-static void destroy_all_epoll_nodes()
+static void epoll_destroy_all_nodes()
 {
     struct epoll_manager *pmgr = &manager;
     struct epoll_node *epoll_node = NULL;

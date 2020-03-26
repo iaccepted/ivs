@@ -13,16 +13,16 @@ int main()
 {
     int ret;
 
-    ret = init_epoll_manager(120, 10);
+    ret = epoll_init_manager(120, 10);
     if (ret) {
         printf("init epoll manager error.");
         return -1;
     }
-    add_epoll_event(STDIN_FILENO, EPOLLIN|EPOLLET, say_hello, NULL);
-    start_epoll_loop("epoll_loop");
+    epoll_add_event(STDIN_FILENO, EPOLLIN|EPOLLET, say_hello, NULL);
+    epoll_start_loop("epoll_loop");
 
-    stop_epoll_loop();
-    deinit_epoll_manager();
+    epoll_stop_loop();
+    epoll_deinit_manager();
     return 0;
 }
 

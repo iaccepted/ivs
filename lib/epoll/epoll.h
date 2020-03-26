@@ -25,15 +25,15 @@ struct epoll_manager{
     atom8_t loop_exit;
 };
 
-int init_epoll_manager(uint32_t epoll_size, int epoll_wait_time);
+int epoll_init_manager(uint32_t epoll_size, int epoll_wait_time);
 
 /* the caller should close all fd in epoll_manager */
-void deinit_epoll_manager();
+void epoll_deinit_manager();
 
 /* the caller should close the fd */
-int del_epoll_event(int fd);
-int add_epoll_event(int fd, uint32_t _event, func_t cb, void *arg);
-int start_epoll_loop(const char *thread_name);
-void stop_epoll_loop();
+int epoll_delete_event(int fd);
+int epoll_add_event(int fd, uint32_t _event, func_t cb, void *arg);
+int epoll_start_loop(const char *thread_name);
+void epoll_stop_loop();
 
 #endif

@@ -19,7 +19,7 @@ signal_handler(int signum)
 static void
 daemon_exit(void)
 {
-    stop_epoll_loop();
+    epoll_stop_loop();
     ilog_uninit();
 }
 
@@ -39,19 +39,19 @@ int main()
 
     daemon_register_signal();
 
-    ret = init_epoll_manager(120, 10);
+    ret = epoll_init_manager(120, 10);
     if (ret != 0) {
         ILOG(ERR, "init epoll manager error.");
         goto err;
     }
 
-    server = create_vhost_user_server("tap1");
+    server = vhost_user_create_server("tap1");
     if (server == NULL) {
         ILOG(ERR, "create vhost user error.");
         goto err;
     }
-    start_vhost_user_server(server);
-    start_epoll_loop("epoll_loop");
+    vhost_user_start_server(server);
+    epoll_start_loop("epoll_loop");
 
     app_running = 1;
     while(app_running) {
@@ -59,7 +59,7 @@ int main()
     }
 
 err:
-    destroy_vhost_user_server(server);
+    vhost_user_destroy_server(server);
     daemon_exit();
     return 0;
 }
