@@ -39,6 +39,8 @@ struct packet_batch {
 
 struct netdev_class {
     char *type;
+    struct netdev *(*create)();
+    int (*destroy)(struct netdev *);
     int (*init)(struct netdev *);
     int (*deinit)(struct netdev *);
     int (*recv)(struct netdev_rxq *, struct packet_batch *);

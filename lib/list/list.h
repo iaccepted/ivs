@@ -11,8 +11,8 @@ extern "C" {
 
 struct list
 {
-	struct list *prev;
-	struct list *next;
+    struct list *prev;
+    struct list *next;
 };
 
 static inline void list_init(struct list *);
