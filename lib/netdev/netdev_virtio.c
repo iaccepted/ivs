@@ -1,4 +1,5 @@
 #include "netdev_virtio.h"
+#include "vhost/vhost_user.h"
 
 static struct netdev *netdev_virtio_create(void)
 {

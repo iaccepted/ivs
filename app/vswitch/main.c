@@ -1,5 +1,6 @@
 #include <signal.h>
 
+#include "vhost/vhost_user.h"
 #include "epoll/epoll.h"
 #include "netdev/netdev_virtio.h"
 #include "log/ilog.h"
@@ -33,7 +34,7 @@ daemon_register_signal()
 int main()
 {
     int ret;
-    vhost_user_server *server = NULL;
+    struct vhost_user_server *server = NULL;
 
     ilog_init("/var/log/ivs/ivs.log", ILOG_INFO);
 

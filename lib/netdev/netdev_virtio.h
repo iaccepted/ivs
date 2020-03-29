@@ -2,15 +2,16 @@
 #define __NETDEV_VIRTIO_H__ 1
 
 #include "netdev.h"
-#include "vhost/vhost_user.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+struct vhost_user_server;
+
 struct netdev_virtio {
     struct netdev up;
-    vhost_user_server *server;
+    struct vhost_user_server *server;
 };
 
 #ifdef __cplusplus
