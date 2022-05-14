@@ -25,7 +25,7 @@ static void epoll_destroy_all_nodes();
 static struct epoll_node *create_epoll_node(int fd, func_t cb, void *arg);
 static void *epoll_loop(void *arg);
 
-int epoll_init_manager(uint32_t epoll_size, int epoll_wait_time)
+int epoll_manager_init(uint32_t epoll_size, int epoll_wait_time)
 {
     struct epoll_manager *pmgr = &manager;
     memset(pmgr, 0, sizeof(struct epoll_manager));
@@ -44,14 +44,14 @@ int epoll_init_manager(uint32_t epoll_size, int epoll_wait_time)
     return 0;
 }
 
-void epoll_deinit_manager()
+void epoll_manager_deinit()
 {
     epoll_destroy_all_nodes();
     close(manager.epoll_fd);
     return;
 }
 
-int epoll_add_event(int fd, uint32_t _event, func_t cb, void *arg)
+int epoll_event_add(int fd, uint32_t _event, func_t cb, void *arg)
 {
     int ret = 0;
     struct epoll_node *node = NULL;
@@ -74,7 +74,7 @@ int epoll_add_event(int fd, uint32_t _event, func_t cb, void *arg)
     return ret;
 }
 
-int epoll_delete_event(int fd)
+int epoll_event_delete(int fd)
 {
     struct epoll_manager *pmgr = &manager;
     int ret = 0;
@@ -84,7 +84,7 @@ int epoll_delete_event(int fd)
     return ret;
 }
 
-int epoll_start_loop(const char *thread_name)
+int epoll_loop_start(const char *thread_name)
 {
     struct epoll_manager *pmgr = &manager;
     int ret;
@@ -103,7 +103,7 @@ int epoll_start_loop(const char *thread_name)
     return 0;
 }
 
-void epoll_stop_loop()
+void epoll_loop_stop()
 {
     struct epoll_manager *pmgr = &manager;
 

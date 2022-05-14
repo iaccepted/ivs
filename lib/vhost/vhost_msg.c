@@ -24,7 +24,7 @@ vhost_user_get_feature(vhost_user_msg *msg)
 /*return bytes# of read on success or negative val on failure.
   read vhost_user_msg header and fds in ancillary data
 */
-static int vhost_read_fd_and_message_hdr(int sockfd, char *buf, int buflen, int *fds, int fd_num)
+static int vhost_fds_and_msghdr_read(int sockfd, char *buf, int buflen, int *fds, int fd_num)
 {
     struct iovec iov;
     struct msghdr msgh;
@@ -67,11 +67,11 @@ static int vhost_read_fd_and_message_hdr(int sockfd, char *buf, int buflen, int 
 }
 
 /* read message from qemu */
-static int vhost_read_message(int sockfd, vhost_user_msg *msg)
+static int vhost_msg_read(int sockfd, vhost_user_msg *msg)
 {
     int ret;
 
-    ret = vhost_read_fd_and_message_hdr(sockfd, (char *)msg, VHOST_USER_HDR_SIZE,
+    ret = vhost_fds_and_msghdr_read(sockfd, (char *)msg, VHOST_USER_HDR_SIZE,
         msg->fds, VHOST_MEMORY_MAX_NREGIONS);
     if (ret <= 0)
         return ret;
@@ -170,7 +170,7 @@ void *vhost_user_handle_msg(void *arg)
     struct vhost_user_socket *vsock = (struct vhost_user_socket *)arg;
     int ret;
 
-    ret = vhost_read_message(vsock->fd, &msg);
+    ret = vhost_msg_read(vsock->fd, &msg);
     if (ret <= 0) {
         if (ret < 0) {
         } else {

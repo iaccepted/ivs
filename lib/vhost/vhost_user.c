@@ -17,14 +17,14 @@
 
 #define MAX_BACKLOG (256)
 
-struct vhost_user_server *vhost_user_create_server(char *port_name)
+struct vhost_user_server *vhost_user_server_create(char *port_name)
 {
     struct vhost_user_server *server = NULL;
     struct vhost_user_socket *vsock = NULL;
 
     server = xzalloc(sizeof(*server));
     list_init(&server->conn_list);
-    vsock = vhost_user_create_socket(port_name);
+    vsock = vhost_user_socket_create(port_name);
     if (vsock == NULL) {
         ILOG(ERR, "create vhost user socket error.");
         goto err;
@@ -38,7 +38,7 @@ err:
     return NULL;
 }
 
-int vhost_user_destroy_server(struct vhost_user_server *server)
+int vhost_user_server_destroy(struct vhost_user_server *server)
 {
     struct vhost_user_socket *conn = NULL;
     struct vhost_user_socket *next = NULL;
@@ -48,14 +48,14 @@ int vhost_user_destroy_server(struct vhost_user_server *server)
     }
 
     LIST_FOR_EACH_SAFE(conn, next, node, &server->conn_list) {
-        vhost_user_destroy_conn(conn);
+        vhost_user_conn_destroy(conn);
     }
     vhost_user_destroy_socket(server->vsock);
     xfree(server);
     return 0;
 }
 
-int vhost_user_start_server(struct vhost_user_server *server)
+int vhost_user_server_start(struct vhost_user_server *server)
 {
     int ret;
     int fd;
@@ -81,7 +81,7 @@ int vhost_user_start_server(struct vhost_user_server *server)
         goto err;
     }
 
-    ret = epoll_add_event(fd, EPOLLIN|EPOLLET, vhost_user_create_conn, server);
+    ret = epoll_event_add(fd, EPOLLIN|EPOLLET, vhost_user_conn_create, server);
     if (ret != 0) {
         ILOG(ERR, "epoll operations failed.");
         goto err;

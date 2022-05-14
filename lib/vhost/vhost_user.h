@@ -20,8 +20,8 @@ struct vhost_user_server {
     struct list conn_list;
 };
 
-struct vhost_user_server *vhost_user_create_server(char *port_name);
-int vhost_user_destroy_server(struct vhost_user_server *server);
-int vhost_user_start_server(struct vhost_user_server *server);
+struct vhost_user_server *vhost_user_server_create(char *port_name);
+int vhost_user_server_destroy(struct vhost_user_server *server);
+int vhost_user_server_start(struct vhost_user_server *server);
 
 #endif /* __VHOST_USER_H__ */

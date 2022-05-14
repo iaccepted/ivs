@@ -49,7 +49,6 @@ static inline void list_insert(struct list *before, struct list *elem)
     before->prev = elem;
 }
 
-
 static inline struct list *list_remove(struct list *elem)
 {
     elem->prev->next = elem->next;

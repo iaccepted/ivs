@@ -15,9 +15,9 @@ struct vhost_user_socket {
     struct list node;
 };
 
-void *vhost_user_create_conn(void *);
-void vhost_user_destroy_conn(struct vhost_user_socket *);
-struct vhost_user_socket *vhost_user_create_socket(char *);
+void *vhost_user_conn_create(void *);
+void vhost_user_conn_destroy(struct vhost_user_socket *);
+struct vhost_user_socket *vhost_user_socket_create(char *);
 void vhost_user_destroy_socket(struct vhost_user_socket *);
 
 #endif /* __VHOST_SOCKET_H__ */

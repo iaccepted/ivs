@@ -16,7 +16,7 @@
 
 #define MAX_BACKLOG (256)
 
-void *vhost_user_create_conn(void *arg)
+void *vhost_user_conn_create(void *arg)
 {
     struct vhost_user_server *server = (struct vhost_user_server *)arg;
     struct vhost_user_socket *conn = NULL;
@@ -37,9 +37,9 @@ void *vhost_user_create_conn(void *arg)
 
     conn = xzalloc(sizeof(struct vhost_user_socket));
     conn->fd = fd;
-    ret = epoll_add_event(conn->fd, EPOLLIN|EPOLLET, vhost_user_handle_msg, conn);
+    ret = epoll_event_add(conn->fd, EPOLLIN|EPOLLET, vhost_user_handle_msg, conn);
     if (ret != 0) {
-        vhost_user_destroy_conn(conn);
+        vhost_user_conn_destroy(conn);
         ILOG(ERR, "epoll operation failed.");
         return NULL;
     }
@@ -48,7 +48,7 @@ void *vhost_user_create_conn(void *arg)
     return conn;
 }
 
-void vhost_user_destroy_conn(struct vhost_user_socket *conn)
+void vhost_user_conn_destroy(struct vhost_user_socket *conn)
 {
     if (conn == NULL) {
         return;
@@ -60,7 +60,7 @@ void vhost_user_destroy_conn(struct vhost_user_socket *conn)
 }
 
 /* unix socket, as server*/
-struct vhost_user_socket *vhost_user_create_socket(char *port_name)
+struct vhost_user_socket *vhost_user_socket_create(char *port_name)
 {
     int fd;
     struct vhost_user_socket *vsock = NULL;
@@ -80,11 +80,11 @@ struct vhost_user_socket *vhost_user_create_socket(char *port_name)
     un->sun_family = AF_UNIX;
     sds_put_format(&sds, "/var/run/%s", port_name);
     strncpy(un->sun_path, sds_str(&sds), sizeof(un->sun_path));
-    un->sun_path[sizeof(un->sun_path) - 1] = '\0';
+    un->sun_path[strlen(un->sun_path)] = '\0';
 
     vsock->fd = fd;
     strncpy(vsock->path, sds_str(&sds), sizeof(vsock->path));
-    vsock->path[sizeof(vsock->path) - 1] = 0;
+    vsock->path[strlen(vsock->path)] = 0;
     sds_deinit(&sds);
     return vsock;
 }

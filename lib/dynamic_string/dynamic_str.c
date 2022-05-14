@@ -12,8 +12,7 @@ static int sds_expand(struct sds *sds, int need)
     char *ptr = NULL;
 
     if (sds->len + need > sds->all) {
-        sds->all += MAX(sds->all, need);
-        sds->all = MAX(sds->all, MIN_STEP);
+        sds->all += MAX(MIN_STEP, need);
         ptr = realloc(sds->str, sds->all + 1);
         if (ptr == NULL) {
             printf("realloc memory failed");
@@ -33,7 +32,9 @@ void sds_init(struct sds *sds)
 
 void sds_deinit(struct sds *sds)
 {
-    free(sds->str);
+    if (sds->str != NULL) {
+        free(sds->str);
+    }
     sds->len = 0;
     sds->all = 0;
 }
@@ -76,14 +77,11 @@ void sds_put_va_args(struct sds *sds, const char *format, va_list args)
     size_t avail_len;
     int need_len;
 
-    avail_len = sds->str ? sds->all - sds->len + 1 : 0;
+    sds_expand(sds, MIN_STEP);
+    avail_len = sds->all - sds->len + 1;
+
     va_copy(args_, args);
-    /* If the output  was
-       truncated  due  to  this  limit  then the return value is the number of
-       characters (excluding the terminating null byte) which would have  been
-       written  to the final string if enough space had been available.  Thus,
-       a return value of size or more means that  the  output  was  truncated.
-       print at most avail_len - 1 characters*/
+    /* try, if buf space is not enough, will return real len to need.*/
     need_len = vsnprintf(sds->str + sds->len, avail_len, format, args_);
     va_end(args_);
 
