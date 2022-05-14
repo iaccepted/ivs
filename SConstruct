@@ -5,6 +5,7 @@ paths = ['./lib']
 
 cflags = [
     '-Wall',
+    '-Wl,--as-needed',
     '-Werror',
     '-O2',
     '-g',
