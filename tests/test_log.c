@@ -1,4 +1,4 @@
-#include "log/ilog.h"
+#include "log/log.h"
 
 int main()
 {

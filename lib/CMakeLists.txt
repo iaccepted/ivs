@@ -1,0 +1,10 @@
+add_subdirectory(atom)
+add_subdirectory(epoll)
+add_subdirectory(log)
+add_subdirectory(list)
+add_subdirectory(memory)
+add_subdirectory(utils)
+add_subdirectory(vhost)
+add_subdirectory(netdev)
+add_subdirectory(dynamic_string)
+

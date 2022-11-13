@@ -5,7 +5,7 @@
 #include <string.h>
 #include <pthread.h>
 
-#include "log/ilog.h"
+#include "log/log.h"
 #include "dynamic_string/dynamic_str.h"
 
 static char *ilog_level_names[] = {

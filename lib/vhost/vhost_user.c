@@ -10,7 +10,7 @@
 #include "vhost_user.h"
 #include "vhost_socket.h"
 #include "epoll/epoll.h"
-#include "log/ilog.h"
+#include "log/log.h"
 #include "netdev/netdev_virtio.h"
 #include "memory/memory.h"
 #include "dynamic_string/dynamic_str.h"

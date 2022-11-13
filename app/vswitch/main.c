@@ -3,7 +3,7 @@
 #include "vhost/vhost_user.h"
 #include "epoll/epoll.h"
 #include "netdev/netdev_virtio.h"
-#include "log/ilog.h"
+#include "log/log.h"
 
 uint16_t app_running = 0;
 

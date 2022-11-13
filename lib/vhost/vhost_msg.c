@@ -9,7 +9,7 @@
 
 #include "vhost_msg.h"
 #include "vhost_socket.h"
-#include "log/ilog.h"
+#include "log/log.h"
 
 static int
 vhost_user_get_feature(vhost_user_msg *msg)

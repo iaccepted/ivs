@@ -10,7 +10,7 @@
 #include "vhost_socket.h"
 #include "vhost_msg.h"
 #include "epoll/epoll.h"
-#include "log/ilog.h"
+#include "log/log.h"
 #include "memory/memory.h"
 #include "dynamic_string/dynamic_str.h"
 
