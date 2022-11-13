@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "dynamic_str.h"
+#include "ds.h"
 #include "utils/util.h"
 
 #define MIN_STEP (16)

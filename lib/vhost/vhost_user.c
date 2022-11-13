@@ -13,7 +13,7 @@
 #include "log/log.h"
 #include "netdev/netdev_virtio.h"
 #include "memory/memory.h"
-#include "dynamic_string/dynamic_str.h"
+#include "ds/ds.h"
 
 #define MAX_BACKLOG (256)
 

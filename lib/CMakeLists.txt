@@ -6,5 +6,5 @@ add_subdirectory(memory)
 add_subdirectory(utils)
 add_subdirectory(vhost)
 add_subdirectory(netdev)
-add_subdirectory(dynamic_string)
+add_subdirectory(ds)
 

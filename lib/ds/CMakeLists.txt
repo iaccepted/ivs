@@ -1,6 +1,6 @@
 add_library(ds SHARED
-dynamic_str.c
-dynamic_str.h
+ds.c
+ds.h
 )
 
 include_directories(${PROJECT_SOURCE_DIR}/lib)

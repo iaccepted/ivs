@@ -1,7 +1,7 @@
 #include <time.h>
 #include <stdio.h>
 
-#include "dynamic_string/dynamic_str.h"
+#include "ds/ds.h"
 
 int main()
 {

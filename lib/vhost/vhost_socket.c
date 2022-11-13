@@ -12,7 +12,7 @@
 #include "epoll/epoll.h"
 #include "log/log.h"
 #include "memory/memory.h"
-#include "dynamic_string/dynamic_str.h"
+#include "ds/ds.h"
 
 #define MAX_BACKLOG (256)
 

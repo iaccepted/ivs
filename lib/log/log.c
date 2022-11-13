@@ -6,7 +6,7 @@
 #include <pthread.h>
 
 #include "log/log.h"
-#include "dynamic_string/dynamic_str.h"
+#include "ds/ds.h"
 
 static char *ilog_level_names[] = {
     "err",
