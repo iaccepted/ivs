@@ -28,6 +28,38 @@ typedef enum vhost_user_request {
     VHOST_USER_MAX,
 } vhost_user_request;
 
+/* feature */
+enum vhost_feature {
+    VHOST_F_CSUM = 0, /* device handles packet with partial checksum */
+    VHOST_F_MTU = 3, /* device support to report max MTU, driver will use this as max mtu value */
+    VHOST_F_MAC = 5, /* device can give mac address */
+    VHOST_F_GUEST_TSO4 = 7, /* device can send ipv4 tso pkt to driver */
+    VHOST_F_GUEST_TSO6 = 8, /* device can send ipv6 tso pkt to driver */
+    VHOST_F_HOST_TSO4 = 11, /* device can handle ipv4 tso from driver */
+    VHOST_F_HOST_TSO6 = 11, /* device can handle ipv6 tso from driver */
+    VHOST_F_MRG_RXBUF = 15, /* device can receive mergerable buffers */
+    VHOST_F_MQ = 22, /* device can support multi-queue */
+    VHOST_F_PROTOCOL = 30,
+};
+
+/* protocol feature */
+enum protocol_feature {
+   PROTOCOL_F_MQ = 0,
+   PROTOCOL_F_LOG_SHMFD = 1,
+   PROTOCOL_F_RARP = 2,
+   PROTOCOL_F_REPLY_ACK = 3,
+   PROTOCOL_F_SET_MTU = 4,
+};
+
+#define VHOST_FEATURES ((1ULL << VHOST_F_MQ) | \
+		(1ULL << VHOST_F_MRG_RXBUF) | \
+		(1ULL << VHOST_F_PROTOCOL) | \
+		(1ULL << VHOST_F_CSUM))
+
+#define VHOST_PROTOCOL_FEATURES ((1ULL << PROTOCOL_F_MQ) | \
+		(1ULL << PROTOCOL_F_LOG_SHMFD) | \
+		(1ULL << PROTOCOL_F_REPLY_ACK))
+
 /* refer to qemu 4.0 hw/virtio/vhost_user.h */
 #define VHOST_MEMORY_MAX_NREGIONS 8
 #define VHOST_USER_VERSION 0x1

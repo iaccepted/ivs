@@ -6,18 +6,52 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 #include "vhost_msg.h"
 #include "vhost_socket.h"
 #include "log/log.h"
 
 static int
-vhost_user_get_feature(vhost_user_msg *msg)
+vhost_user_get_features(vhost_user_msg *msg)
 {
-    msg->payload.u64 = 0;
+    ILOG(INFO, "vhost user get feature.");
+    msg->payload.u64 = VHOST_FEATURES;
     msg->size = sizeof(msg->payload.u64);
     msg->fd_num = 0;
 
+    return VHOST_MSG_RESULT_NEED_REPLY;
+}
+
+static int
+vhost_user_set_owner(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set owner.");
+    return VHOST_MSG_RESULT_OK;
+}
+
+static int
+vhost_user_get_protocol_features(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user get protocol features.");
+    msg->payload.u64 = VHOST_PROTOCOL_FEATURES;
+    msg->size = sizeof(msg->payload.u64);
+    return VHOST_MSG_RESULT_NEED_REPLY;
+}
+
+static int
+vhost_user_set_protocol_features(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set protocol features, feature = %"PRIu64, msg->payload.u64);
+    return VHOST_MSG_RESULT_OK;
+}
+
+static int
+vhost_user_get_queue_num(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user get queue num");
+    msg->payload.u64 = 1;
+    msg->size = sizeof(msg->payload.u64);
     return VHOST_MSG_RESULT_NEED_REPLY;
 }
 
@@ -157,11 +191,42 @@ static int vhost_send_reply(int sockfd, struct vhost_user_msg *msg)
 
     return vhost_send_message(sockfd, msg);
 }
-
+/*
+typedef enum vhost_user_request {
+    VHOST_USER_NONE = 0,
+    VHOST_USER_GET_FEATURES = 1,
+    VHOST_USER_SET_FEATURES = 2,
+    VHOST_USER_SET_OWNER = 3,
+    VHOST_USER_RESET_OWNER = 4,
+    VHOST_USER_SET_MEM_TABLE = 5,
+    VHOST_USER_SET_LOG_BASE = 6,
+    VHOST_USER_SET_LOG_FD = 7,
+    VHOST_USER_SET_VRING_NUM = 8,
+    VHOST_USER_SET_VRING_ADDR = 9,
+    VHOST_USER_SET_VRING_BASE = 10,
+    VHOST_USER_GET_VRING_BASE = 11,
+    VHOST_USER_SET_VRING_KICK = 12,
+    VHOST_USER_SET_VRING_CALL = 13,
+    VHOST_USER_SET_VRING_ERR = 14,
+    VHOST_USER_GET_PROTOCOL_FEATURES = 15,
+    VHOST_USER_SET_PROTOCOL_FEATURES = 16,
+    VHOST_USER_GET_QUEUE_NUM = 17,
+    VHOST_USER_SET_VRING_ENABLE = 18,
+    VHOST_USER_MAX,
+*/
 
 static vhost_user_msg_handler_t vhost_user_msg_handlers[VHOST_USER_MAX] =
 {
-    [VHOST_USER_GET_FEATURES] = vhost_user_get_feature,
+    [VHOST_USER_GET_FEATURES] = vhost_user_get_features,
+    [VHOST_USER_SET_FEATURES] = NULL,
+    [VHOST_USER_SET_OWNER] = vhost_user_set_owner,
+    [VHOST_USER_RESET_OWNER] = NULL,
+    [VHOST_USER_SET_MEM_TABLE] = NULL,
+    [VHOST_USER_SET_LOG_BASE] = NULL,
+    [VHOST_USER_SET_LOG_FD] = NULL,
+    [VHOST_USER_GET_PROTOCOL_FEATURES] = vhost_user_get_protocol_features,
+    [VHOST_USER_SET_PROTOCOL_FEATURES] = vhost_user_set_protocol_features,
+    [VHOST_USER_GET_QUEUE_NUM] = vhost_user_get_queue_num,
 };
 
 void *vhost_user_handle_msg(void *arg)
@@ -172,13 +237,11 @@ void *vhost_user_handle_msg(void *arg)
 
     ret = vhost_msg_read(vsock->fd, &msg);
     if (ret <= 0) {
-        if (ret < 0) {
-        } else {
-        }
+        ILOG(INFO, "read vhost msg error.");
         return NULL;
     }
 
-    if (msg.request > VHOST_USER_MAX) {
+    if (msg.request >= VHOST_USER_MAX) {
         ILOG(ERR, "vhost msg is error, request = %d", msg.request);
         return NULL;
     }
