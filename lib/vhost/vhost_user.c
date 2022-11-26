@@ -81,7 +81,7 @@ int vhost_user_server_start(struct vhost_user_server *server)
         goto err;
     }
 
-    ret = epoll_event_add(fd, EPOLLIN|EPOLLET, vhost_user_conn_create, server);
+    ret = epoll_event_add(fd, EPOLLIN, vhost_user_conn_create, server);
     if (ret != 0) {
         ILOG(ERR, "epoll operations failed.");
         goto err;

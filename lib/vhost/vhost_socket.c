@@ -37,7 +37,7 @@ void *vhost_user_conn_create(void *arg)
 
     conn = xzalloc(sizeof(struct vhost_user_socket));
     conn->fd = fd;
-    ret = epoll_event_add(conn->fd, EPOLLIN|EPOLLET, vhost_user_handle_msg, conn);
+    ret = epoll_event_add(conn->fd, EPOLLIN, vhost_user_handle_msg, conn);
     if (ret != 0) {
         vhost_user_conn_destroy(conn);
         ILOG(ERR, "epoll operation failed.");

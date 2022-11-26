@@ -24,6 +24,14 @@ vhost_user_get_features(vhost_user_msg *msg)
 }
 
 static int
+vhost_user_set_features(vhost_user_msg *msg)
+{
+    uint64_t feature = msg->payload.u64;
+    ILOG(INFO, "vhost user set feature,feature = %x.", feature);
+    return 0;
+}
+
+static int
 vhost_user_set_owner(vhost_user_msg *msg)
 {
     ILOG(INFO, "vhost user set owner.");
@@ -218,7 +226,7 @@ typedef enum vhost_user_request {
 static vhost_user_msg_handler_t vhost_user_msg_handlers[VHOST_USER_MAX] =
 {
     [VHOST_USER_GET_FEATURES] = vhost_user_get_features,
-    [VHOST_USER_SET_FEATURES] = NULL,
+    [VHOST_USER_SET_FEATURES] = vhost_user_set_features,
     [VHOST_USER_SET_OWNER] = vhost_user_set_owner,
     [VHOST_USER_RESET_OWNER] = NULL,
     [VHOST_USER_SET_MEM_TABLE] = NULL,
