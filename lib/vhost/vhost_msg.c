@@ -15,7 +15,7 @@
 static int
 vhost_user_get_features(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user get feature.");
+    ILOG(INFO, "vhost user get feature(0x%x).", VHOST_USER_GET_FEATURES);
     msg->payload.u64 = VHOST_FEATURES;
     msg->size = sizeof(msg->payload.u64);
     msg->fd_num = 0;
@@ -27,21 +27,21 @@ static int
 vhost_user_set_features(vhost_user_msg *msg)
 {
     uint64_t feature = msg->payload.u64;
-    ILOG(INFO, "vhost user set feature,feature = %x.", feature);
+    ILOG(INFO, "vhost user set feature(0x%x),feature = %x.", VHOST_USER_SET_FEATURES, feature);
     return 0;
 }
 
 static int
 vhost_user_set_owner(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user set owner.");
+    ILOG(INFO, "vhost user set owner(0x%x).", VHOST_USER_SET_OWNER);
     return VHOST_MSG_RESULT_OK;
 }
 
 static int
 vhost_user_get_protocol_features(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user get protocol features.");
+    ILOG(INFO, "vhost user get protocol features(0x%x).", VHOST_USER_GET_PROTOCOL_FEATURES);
     msg->payload.u64 = VHOST_PROTOCOL_FEATURES;
     msg->size = sizeof(msg->payload.u64);
     return VHOST_MSG_RESULT_NEED_REPLY;
@@ -50,14 +50,14 @@ vhost_user_get_protocol_features(vhost_user_msg *msg)
 static int
 vhost_user_set_protocol_features(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user set protocol features, feature = %"PRIu64, msg->payload.u64);
+    ILOG(INFO, "vhost user set protocol features(0x%x), feature = %"PRIu64".", VHOST_USER_SET_PROTOCOL_FEATURES, msg->payload.u64);
     return VHOST_MSG_RESULT_OK;
 }
 
 static int
 vhost_user_get_queue_num(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user get queue num");
+    ILOG(INFO, "vhost user get queue num(0x%x).", VHOST_USER_GET_QUEUE_NUM);
     msg->payload.u64 = 1;
     msg->size = sizeof(msg->payload.u64);
     return VHOST_MSG_RESULT_NEED_REPLY;
@@ -70,29 +70,28 @@ vhost_user_set_vring_call(vhost_user_msg *msg)
 
     qid = (msg->payload.u64 & 0xff) >> 1;
     idx = (msg->payload.u64 & 0xff) & 1;
-    ILOG(INFO, "vhost user set vring call");
-    ILOG(INFO, "vhost user set vring call, qid = %u, idx = %u", qid, idx);
+    ILOG(INFO, "vhost user set vring call(0x%x), qid = %u, idx = %u.", VHOST_USER_SET_VRING_CALL, qid, idx);
     return VHOST_MSG_RESULT_OK;
 }
 
 static int
 vhost_user_set_mem_table(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user set mem table");
+    ILOG(INFO, "vhost user set mem table(0x%x).", VHOST_USER_SET_MEM_TABLE);
     return VHOST_MSG_RESULT_OK;
 }
 
 static int
 vhost_user_reset_owner(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user reset owner.");
+    ILOG(INFO, "vhost user reset owner(0x%x).", VHOST_USER_RESET_OWNER);
     return VHOST_MSG_RESULT_OK;
 }
 
 static int
 vhost_user_set_vring_enable(vhost_user_msg *msg)
 {
-    ILOG(INFO, "vhost user set vring enable.");
+    ILOG(INFO, "vhost user set vring enable(0x%x).", VHOST_USER_SET_VRING_ENABLE);
     return VHOST_MSG_RESULT_OK;
 }
 /*return bytes# of read on success or negative val on failure.
@@ -292,8 +291,6 @@ void *vhost_user_handle_msg(void *arg)
         ILOG(ERR, "vhost msg is error, request = %d", msg.request);
         return NULL;
     }
-
-    ILOG(INFO, "msg id = %u", msg.request);
 
     if (vhost_user_msg_handlers[msg.request] == NULL) {
         return NULL;
