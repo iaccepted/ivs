@@ -94,6 +94,61 @@ vhost_user_set_vring_enable(vhost_user_msg *msg)
     ILOG(INFO, "vhost user set vring enable(0x%x).", VHOST_USER_SET_VRING_ENABLE);
     return VHOST_MSG_RESULT_OK;
 }
+
+static int
+vhost_user_set_vring_base(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set vring base(0x%x).", VHOST_USER_SET_VRING_BASE);
+    return VHOST_MSG_RESULT_OK;
+}
+
+static int
+vhost_user_set_vring_kick(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set vring kick(0x%x).", VHOST_USER_SET_VRING_KICK);
+    return VHOST_MSG_RESULT_OK;
+}
+
+static int
+vhost_user_set_vring_num(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set vring num(0x%x).", VHOST_USER_SET_VRING_NUM);
+    return VHOST_MSG_RESULT_OK;
+}
+
+static int
+vhost_user_get_vring_base(vhost_user_msg *msg)
+{
+    uint16_t qid, idx;
+
+    qid = (msg->payload.state.index & 0xff) >> 1;
+    idx = (msg->payload.state.index & 0xff) & 1;
+    ILOG(INFO, "vhost user get vring base(0x%x), qid = %hu, idx = %hu", VHOST_USER_GET_VRING_BASE, qid, idx);
+    msg->payload.state.num = 1;
+    msg->size = sizeof(msg->payload.state);
+    return VHOST_MSG_RESULT_NEED_REPLY;
+}
+
+static int
+vhost_user_set_vring_addr(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set vring addr(0x%x).", VHOST_USER_SET_VRING_ADDR);
+    return VHOST_MSG_RESULT_OK;
+}
+
+static int
+vhost_user_set_log_base(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set log base(0x%x).", VHOST_USER_SET_LOG_BASE);
+    return VHOST_MSG_RESULT_OK;
+}
+
+static int
+vhost_user_set_log_fd(vhost_user_msg *msg)
+{
+    ILOG(INFO, "vhost user set log fd(0x%x).", VHOST_USER_SET_LOG_FD);
+    return VHOST_MSG_RESULT_OK;
+}
 /*return bytes# of read on success or negative val on failure.
   read vhost_user_msg header and fds in ancillary data
 */
@@ -261,13 +316,13 @@ static vhost_user_msg_handler_t vhost_user_msg_handlers[VHOST_USER_MAX] =
     [VHOST_USER_SET_OWNER] = vhost_user_set_owner,
     [VHOST_USER_RESET_OWNER] = vhost_user_reset_owner,
     [VHOST_USER_SET_MEM_TABLE] = vhost_user_set_mem_table,
-    [VHOST_USER_SET_LOG_BASE] = NULL,
-    [VHOST_USER_SET_LOG_FD] = NULL,
-    [VHOST_USER_SET_VRING_ADDR] = NULL,
-    [VHOST_USER_SET_VRING_NUM] = NULL,
-    [VHOST_USER_SET_VRING_BASE] = NULL,
-    [VHOST_USER_GET_VRING_BASE] = NULL,
-    [VHOST_USER_SET_VRING_KICK] = NULL,
+    [VHOST_USER_SET_LOG_BASE] = vhost_user_set_log_base,
+    [VHOST_USER_SET_LOG_FD] = vhost_user_set_log_fd,
+    [VHOST_USER_SET_VRING_ADDR] = vhost_user_set_vring_addr,
+    [VHOST_USER_SET_VRING_NUM] = vhost_user_set_vring_num,
+    [VHOST_USER_SET_VRING_BASE] = vhost_user_set_vring_base,
+    [VHOST_USER_GET_VRING_BASE] = vhost_user_get_vring_base,
+    [VHOST_USER_SET_VRING_KICK] = vhost_user_set_vring_kick,
     [VHOST_USER_SET_VRING_CALL] = vhost_user_set_vring_call,
     [VHOST_USER_GET_PROTOCOL_FEATURES] = vhost_user_get_protocol_features,
     [VHOST_USER_SET_PROTOCOL_FEATURES] = vhost_user_set_protocol_features,
