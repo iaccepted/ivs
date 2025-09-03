@@ -67,7 +67,7 @@ enum protocol_feature {
 enum vhost_msg_result {
     /* Message handling failed */
     VHOST_MSG_RESULT_ERR = -1,
-    /* Message handling successful */
+    /* Message handling successful, should check reply flag to reply status 0 */
     VHOST_MSG_RESULT_OK =  0,
     /* Message handling successful and reply prepared */
     VHOST_MSG_RESULT_NEED_REPLY =  1,

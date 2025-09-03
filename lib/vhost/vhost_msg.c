@@ -356,6 +356,10 @@ void *vhost_user_handle_msg(void *arg)
         case VHOST_MSG_RESULT_ERR:
             break;
         case VHOST_MSG_RESULT_OK:
+	    if (msg.flags & VHOST_USER_NEED_REPLY) {
+                msg.payload.u64 = 0;
+		vhost_send_reply(vsock->fd, &msg);
+	    }
             break;
         case VHOST_MSG_RESULT_NEED_REPLY:
             vhost_send_reply(vsock->fd, &msg);
